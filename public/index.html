@@ -5,7 +5,14 @@
 
   <style>
     body { font-family: Arial; background:#f5f5f5; margin:0; }
-    h1 { background:#111; color:#fff; padding:20px; text-align:center; }
+
+    h1 { 
+      background:#ee4d2d; 
+      color:#fff; 
+      padding:20px; 
+      text-align:center; 
+      margin:0;
+    }
 
     .topo {
       padding: 10px;
@@ -33,12 +40,13 @@
       padding:10px;
       border-radius:10px;
       text-align:center;
+      box-shadow:0 3px 10px rgba(0,0,0,0.1);
     }
 
     img { width:100%; border-radius:10px; }
 
     button {
-      background:#111;
+      background:#ee4d2d;
       color:#fff;
       border:none;
       padding:8px;
@@ -57,7 +65,7 @@
 
 <body>
 
-<h1>Minha Loja</h1>
+<h1>🛒 Minha Loja</h1>
 
 <div class="topo">
   <input id="busca" placeholder="Buscar produto..." onkeyup="filtrar()">
@@ -95,7 +103,7 @@ function mostrar(data){
   data.forEach(p => {
     div.innerHTML += `
       <div class="card">
-        <img src="${p.img}">
+        <img src="${p.img || 'https://via.placeholder.com/150'}">
         <h3>${p.nome}</h3>
         <p>R$ ${p.preco}</p>
         <button onclick="add('${p.nome}', ${p.preco})">Comprar</button>
@@ -160,13 +168,6 @@ function menos(nome){
 }
 
 function finalizar(){
-  const usuario = localStorage.getItem("usuario");
-
-  if(!usuario){
-    alert("Você precisa estar logado!");
-    return;
-  }
-
   let total = 0;
   carrinho.forEach(i => total += i.preco * i.qtd);
 
@@ -176,7 +177,6 @@ function finalizar(){
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      usuario,
       carrinho,
       total
     })
@@ -186,9 +186,6 @@ function finalizar(){
     alert(data.mensagem);
     carrinho = [];
     render();
-  })
-  .catch(() => {
-    alert("Erro ao finalizar compra");
   });
 }
 

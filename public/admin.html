@@ -1,46 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Painel Admin</title>
-
-  <style>
-    body { font-family: Arial; background:#f5f5f5; padding:20px; }
-
-    .box {
-      background:white;
-      padding:20px;
-      border-radius:10px;
-      max-width:500px;
-      margin:auto;
-    }
-
-    input, button {
-      width:100%;
-      padding:10px;
-      margin:5px 0;
-    }
-
-    .item {
-      background:white;
-      padding:10px;
-      margin-top:10px;
-    }
-  </style>
+  <title>Admin</title>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Admin Produtos</h2>
+<h2>Admin Produtos</h2>
 
-  <input id="nome" placeholder="Nome">
-  <input id="preco" placeholder="Preço">
-  <input id="img" placeholder="Imagem">
+<input id="nome" placeholder="Nome"><br><br>
+<input id="preco" placeholder="Preço"><br><br>
+<input id="img" placeholder="Imagem (URL)"><br><br>
 
-  <button onclick="criar()">Criar Produto</button>
+<button onclick="criar()">Criar</button>
 
-  <div id="lista"></div>
-</div>
+<div id="lista"></div>
 
 <script>
 
@@ -65,35 +39,12 @@ function carregar(){
 
     data.forEach(p => {
       lista.innerHTML += `
-        <div class="item">
+        <div>
           ${p.nome} - R$ ${p.preco}
-          <br>
-          <button onclick="editar('${p._id}')">Editar</button>
-          <button onclick="deletar('${p._id}')">Excluir</button>
         </div>
       `;
     });
   });
-}
-
-function editar(id){
-  const nome = prompt("Novo nome");
-  const preco = prompt("Novo preço");
-  const img = prompt("Nova imagem");
-
-  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ nome, preco, img })
-  })
-  .then(() => carregar());
-}
-
-function deletar(id){
-  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
-    method:"DELETE"
-  })
-  .then(() => carregar());
 }
 
 carregar();
