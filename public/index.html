@@ -4,37 +4,27 @@
   <title>Minha Loja</title>
 
   <style>
-    body {
-      font-family: Arial;
-      background:#f5f5f5;
-      margin:0;
+    body { font-family: Arial; background:#f5f5f5; margin:0; }
+    h1 { background:#111; color:#fff; padding:20px; text-align:center; }
+
+    .topo {
+      padding: 10px;
+      text-align: center;
+      background: white;
     }
 
-    h1 {
-      background:#ee4d2d;
-      color:#fff;
-      padding:20px;
-      text-align:center;
-      margin:0;
+    .topo input {
+      width: 80%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
 
-    .container {
-      max-width:1100px;
-      margin:auto;
-      padding:20px;
-    }
-
-    #busca {
-      width:100%;
-      padding:10px;
-      margin:15px 0;
-      border-radius:8px;
-      border:1px solid #ccc;
-    }
+    .container { max-width:900px; margin:auto; padding:20px; }
 
     #produtos {
       display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap:15px;
     }
 
@@ -43,65 +33,24 @@
       padding:10px;
       border-radius:10px;
       text-align:center;
-      box-shadow:0 3px 10px rgba(0,0,0,0.1);
     }
 
-    .card img {
-      width:100%;
-      height:180px;
-      object-fit:contain;
-      background:#fff;
-      border-radius:10px;
-    }
+    img { width:100%; border-radius:10px; }
 
     button {
-      background:#ee4d2d;
+      background:#111;
       color:#fff;
       border:none;
       padding:8px;
       border-radius:8px;
       cursor:pointer;
-      margin-top:5px;
-      width:100%;
     }
 
     #carrinho {
       background:white;
-      padding:15px;
+      padding:10px;
       margin-top:20px;
       border-radius:10px;
-    }
-
-    .item {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-    }
-
-    .qtd {
-      display:flex;
-      gap:5px;
-      align-items:center;
-    }
-
-    .qtd button {
-      width:auto;
-      padding:5px 10px;
-    }
-
-    .topbar {
-      display:flex;
-      justify-content:flex-end;
-      padding:10px;
-      background:#fff;
-    }
-
-    .topbar a {
-      margin-left:10px;
-      text-decoration:none;
-      color:#ee4d2d;
-      font-weight:bold;
     }
   </style>
 </head>
@@ -110,13 +59,11 @@
 
 <h1>Minha Loja</h1>
 
-<div class="topbar">
-  <a href="/login.html">Login</a>
+<div class="topo">
+  <input id="busca" placeholder="Buscar produto..." onkeyup="filtrar()">
 </div>
 
 <div class="container">
-
-  <input id="busca" placeholder="Buscar produto...">
 
   <div id="produtos"></div>
 
@@ -134,102 +81,84 @@
 let carrinho = [];
 let listaProdutos = [];
 
-// 🔥 PRODUTOS
-fetch("http://localhost:3000/produtos")
+fetch("https://loja-cd3v.onrender.com/produtos")
 .then(r => r.json())
 .then(data => {
   listaProdutos = data;
-  mostrarProdutos(data);
+  mostrar(data);
 });
 
-// 🔥 MOSTRAR
-function mostrarProdutos(produtos){
+function mostrar(data){
   const div = document.getElementById("produtos");
   div.innerHTML = "";
 
-  produtos.forEach(p => {
+  data.forEach(p => {
     div.innerHTML += `
       <div class="card">
         <img src="${p.img}">
         <h3>${p.nome}</h3>
         <p>R$ ${p.preco}</p>
-        <button onclick="add('${p._id}', '${p.nome}', ${p.preco})">Comprar</button>
+        <button onclick="add('${p.nome}', ${p.preco})">Comprar</button>
       </div>
     `;
   });
 }
 
-// 🔥 BUSCA
-document.getElementById("busca").addEventListener("input", (e) => {
-  const texto = e.target.value.toLowerCase();
+function filtrar(){
+  const termo = document.getElementById("busca").value.toLowerCase();
+  const filtrados = listaProdutos.filter(p => p.nome.toLowerCase().includes(termo));
+  mostrar(filtrados);
+}
 
-  const filtrados = listaProdutos.filter(p =>
-    p.nome.toLowerCase().includes(texto)
-  );
+function add(nome, preco){
+  const item = carrinho.find(i => i.nome === nome);
 
-  mostrarProdutos(filtrados);
-});
-
-// ➕ ADD
-function add(id, nome, preco){
-  const item = carrinho.find(i => i.id === id);
-
-  if (item) {
+  if(item){
     item.qtd++;
   } else {
-    carrinho.push({ id, nome, preco, qtd: 1 });
+    carrinho.push({nome, preco, qtd:1});
   }
 
   render();
 }
 
-// ➖ MENOS
-function menos(id){
-  const item = carrinho.find(i => i.id === id);
-
-  if (item.qtd > 1) {
-    item.qtd--;
-  } else {
-    carrinho = carrinho.filter(i => i.id !== id);
-  }
-
-  render();
-}
-
-// ➕ MAIS
-function mais(id){
-  const item = carrinho.find(i => i.id === id);
-  item.qtd++;
-  render();
-}
-
-// 🧮 RENDER
 function render(){
-  const div = document.getElementById("carrinho");
+  let div = document.getElementById("carrinho");
   div.innerHTML = "";
 
   let total = 0;
 
   carrinho.forEach(i => {
     div.innerHTML += `
-      <div class="item">
-        <span>${i.nome} - R$ ${i.preco}</span>
-
-        <div class="qtd">
-          <button onclick="menos('${i.id}')">-</button>
-          ${i.qtd}
-          <button onclick="mais('${i.id}')">+</button>
-        </div>
-      </div>
+      <p>${i.nome} - R$ ${i.preco} 
+      <button onclick="menos('${i.nome}')">-</button>
+      ${i.qtd}
+      <button onclick="mais('${i.nome}')">+</button>
+      </p>
     `;
-
     total += i.preco * i.qtd;
   });
 
   document.getElementById("total").innerText = "Total: R$ " + total;
 }
 
-// 💥 FINALIZAR COMPRA (COM LOGIN)
+function mais(nome){
+  const item = carrinho.find(i => i.nome === nome);
+  item.qtd++;
+  render();
+}
+
+function menos(nome){
+  const item = carrinho.find(i => i.nome === nome);
+  item.qtd--;
+
+  if(item.qtd <= 0){
+    carrinho = carrinho.filter(i => i.nome !== nome);
+  }
+
+  render();
+}
+
 function finalizar(){
   const usuario = localStorage.getItem("usuario");
 
@@ -241,15 +170,15 @@ function finalizar(){
   let total = 0;
   carrinho.forEach(i => total += i.preco * i.qtd);
 
-  fetch("http://localhost:3000/pedido", {
+  fetch("https://loja-cd3v.onrender.com/pedido", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      usuario: usuario,
-      carrinho: carrinho,
-      total: total
+      usuario,
+      carrinho,
+      total
     })
   })
   .then(r => r.json())
@@ -258,8 +187,7 @@ function finalizar(){
     carrinho = [];
     render();
   })
-  .catch(err => {
-    console.log(err);
+  .catch(() => {
     alert("Erro ao finalizar compra");
   });
 }

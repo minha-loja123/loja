@@ -1,176 +1,102 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Painel Admin Shopee</title>
+  <title>Painel Admin</title>
 
   <style>
-    body {
-      font-family: Arial;
-      background:#f5f5f5;
-      margin:0;
-      padding:20px;
-    }
-
-    h1 {
-      text-align:center;
-      color:#ee4d2d;
-    }
-
-    .container {
-      max-width:1000px;
-      margin:auto;
-    }
+    body { font-family: Arial; background:#f5f5f5; padding:20px; }
 
     .box {
       background:white;
-      padding:15px;
-      margin-bottom:20px;
+      padding:20px;
       border-radius:10px;
-      box-shadow:0 3px 10px rgba(0,0,0,0.1);
+      max-width:500px;
+      margin:auto;
     }
 
-    input {
+    input, button {
       width:100%;
       padding:10px;
       margin:5px 0;
     }
 
-    button {
-      background:#ee4d2d;
-      color:white;
-      border:none;
-      padding:10px;
-      border-radius:8px;
-      cursor:pointer;
-      margin-top:5px;
-    }
-
     .item {
-      border-bottom:1px solid #ddd;
-      padding:10px 0;
-    }
-
-    select {
-      padding:5px;
-      margin-top:5px;
+      background:white;
+      padding:10px;
+      margin-top:10px;
     }
   </style>
 </head>
 
 <body>
 
-<h1>🔥 Painel Admin Shopee</h1>
+<div class="box">
+  <h2>Admin Produtos</h2>
 
-<div class="container">
+  <input id="nome" placeholder="Nome">
+  <input id="preco" placeholder="Preço">
+  <input id="img" placeholder="Imagem">
 
-  <!-- ===================== -->
-  <!-- PRODUTOS -->
-  <!-- ===================== -->
-  <div class="box">
-    <h2>📦 Produtos</h2>
+  <button onclick="criar()">Criar Produto</button>
 
-    <input id="nome" placeholder="Nome">
-    <input id="preco" placeholder="Preço">
-    <input id="img" placeholder="Imagem (ex: /img/pod.jpg)">
-
-    <button onclick="criarProduto()">Criar Produto</button>
-
-    <div id="listaProdutos"></div>
-  </div>
-
-  <!-- ===================== -->
-  <!-- PEDIDOS -->
-  <!-- ===================== -->
-  <div class="box">
-    <h2>🛒 Pedidos</h2>
-    <div id="listaPedidos"></div>
-  </div>
-
+  <div id="lista"></div>
 </div>
 
 <script>
 
-let editando = null;
-
-// =====================
-// PRODUTOS
-// =====================
-function criarProduto(){
-  const nome = document.getElementById("nome").value;
-  const preco = document.getElementById("preco").value;
-  const img = document.getElementById("img").value;
-
-  fetch("http://localhost:3000/admin/produto", {
+function criar(){
+  fetch("https://loja-cd3v.onrender.com/admin/produto", {
     method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      nome: nome.value,
+      preco: preco.value,
+      img: img.value
+    })
+  })
+  .then(() => carregar());
+}
+
+function carregar(){
+  fetch("https://loja-cd3v.onrender.com/produtos")
+  .then(r => r.json())
+  .then(data => {
+    lista.innerHTML = "";
+
+    data.forEach(p => {
+      lista.innerHTML += `
+        <div class="item">
+          ${p.nome} - R$ ${p.preco}
+          <br>
+          <button onclick="editar('${p._id}')">Editar</button>
+          <button onclick="deletar('${p._id}')">Excluir</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function editar(id){
+  const nome = prompt("Novo nome");
+  const preco = prompt("Novo preço");
+  const img = prompt("Nova imagem");
+
+  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
+    method:"PUT",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({ nome, preco, img })
   })
-  .then(() => {
-    carregarProdutos();
-  });
+  .then(() => carregar());
 }
 
-function carregarProdutos(){
-  fetch("http://localhost:3000/produtos")
-  .then(r => r.json())
-  .then(data => {
-    const div = document.getElementById("listaProdutos");
-    div.innerHTML = "";
-
-    data.forEach(p => {
-      div.innerHTML += `
-        <div class="item">
-          <b>${p.nome}</b> - R$ ${p.preco}
-        </div>
-      `;
-    });
-  });
-}
-
-// =====================
-// PEDIDOS
-// =====================
-function carregarPedidos(){
-  fetch("http://localhost:3000/admin/pedidos")
-  .then(r => r.json())
-  .then(data => {
-    const div = document.getElementById("listaPedidos");
-    div.innerHTML = "";
-
-    data.forEach(p => {
-      div.innerHTML += `
-        <div class="item">
-          <b>Usuário:</b> ${p.usuario || "não logado"} <br>
-          <b>Total:</b> R$ ${p.total} <br>
-          <b>Status:</b> ${p.status}
-
-          <br>
-
-          <select onchange="mudarStatus('${p._id}', this.value)">
-            <option>Processando</option>
-            <option>Enviado</option>
-            <option>Entregue</option>
-          </select>
-        </div>
-      `;
-    });
-  });
-}
-
-function mudarStatus(id, status){
-  fetch("http://localhost:3000/admin/pedido/" + id, {
-    method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ status })
+function deletar(id){
+  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
+    method:"DELETE"
   })
-  .then(() => carregarPedidos());
+  .then(() => carregar());
 }
 
-// =====================
-// INICIAL
-// =====================
-carregarProdutos();
-carregarPedidos();
+carregar();
 
 </script>
 
