@@ -12,19 +12,29 @@ app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
 /* ========================
-   MONGO
+   CONEXÃO MONGODB
 ======================== */
 mongoose.connect(process.env.MONGO_URL)
 .then(() => console.log("🟢 MongoDB conectado"))
-.catch(err => console.log("🔴 erro MongoDB", err));
+.catch(err => {
+  console.log("🔴 erro MongoDB");
+  console.log(err);
+});
 
 /* ========================
    MODELOS
 ======================== */
+
 const Produto = mongoose.model("Produto", {
   nome: String,
   preco: Number,
   img: String
+});
+
+const Pedido = mongoose.model("Pedido", {
+  carrinho: Array,
+  total: Number,
+  data: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model("User", {
@@ -34,98 +44,126 @@ const User = mongoose.model("User", {
 });
 
 /* ========================
-   SETUP ADMIN (1x)
+   SETUP ADMIN (RODAR 1X)
 ======================== */
 app.get("/setup", async (req, res) => {
-  const existe = await User.findOne({ username: "admin" });
+  try {
 
-  if (existe) return res.send("admin já existe");
+    const existe = await User.findOne({ username: "admin" });
 
-  const hash = await bcrypt.hash("123456", 10);
+    if (existe) {
+      return res.send("admin já existe");
+    }
 
-  await User.create({
-    username: "admin",
-    password: hash,
-    role: "admin"
-  });
+    const hash = await bcrypt.hash("123456", 10);
 
-  res.send("admin criado");
+    await User.create({
+      username: "admin",
+      password: hash,
+      role: "admin"
+    });
+
+    res.send("admin criado com sucesso");
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("erro no setup");
+  }
 });
 
 /* ========================
    LOGIN
 ======================== */
 app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
+  try {
 
-  if (!user) return res.status(400).json({ erro: "Usuário não existe" });
+    const { username, password } = req.body;
 
-  const ok = await bcrypt.compare(password, user.password);
+    const user = await User.findOne({ username });
 
-  if (!ok) return res.status(400).json({ erro: "Senha incorreta" });
+    if (!user) {
+      return res.status(400).json({ erro: "Usuário não existe" });
+    }
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
+    const ok = await bcrypt.compare(password, user.password);
 
-  res.json({ token });
+    if (!ok) {
+      return res.status(400).json({ erro: "Senha incorreta" });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({ token });
+
+  } catch (err) {
+    console.log("ERRO LOGIN:", err);
+    res.status(500).json({ erro: "erro interno login" });
+  }
 });
 
 /* ========================
-   AUTH
+   AUTH ADMIN
 ======================== */
 function auth(req, res, next) {
+
   const token = req.headers.authorization;
 
-  if (!token) return res.status(401).send("Sem token");
+  if (!token) {
+    return res.status(401).json({ erro: "sem token" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch {
-    return res.status(401).send("Token inválido");
+  } catch (err) {
+    return res.status(401).json({ erro: "token inválido" });
   }
 }
 
 /* ========================
    PRODUTOS
 ======================== */
+
+// listar
 app.get("/produtos", async (req, res) => {
   const produtos = await Produto.find();
   res.json(produtos);
 });
 
+// criar (admin)
 app.post("/admin/produto", auth, async (req, res) => {
-  if (req.user.role !== "admin")
-    return res.status(403).send("Sem permissão");
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ erro: "sem permissão" });
+  }
 
   const novo = await Produto.create(req.body);
   res.json(novo);
 });
 
-app.put("/admin/produto/:id", auth, async (req, res) => {
-  const produto = await Produto.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-
-  res.json(produto);
-});
-
-app.delete("/admin/produto/:id", auth, async (req, res) => {
-  await Produto.findByIdAndDelete(req.params.id);
-  res.json({ ok: true });
+/* ========================
+   PEDIDOS
+======================== */
+app.post("/pedido", async (req, res) => {
+  try {
+    const pedido = await Pedido.create(req.body);
+    res.json({ mensagem: "Pedido salvo!", pedido });
+  } catch (err) {
+    res.status(500).json({ erro: "erro ao salvar pedido" });
+  }
 });
 
 /* ========================
-   START
+   START SERVER
 ======================== */
-app.listen(process.env.PORT || 3000, () => {
-  console.log("🚀 servidor rodando");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("🚀 servidor rodando na porta " + PORT);
 });
