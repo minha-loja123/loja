@@ -17,7 +17,7 @@ app.use(express.static(__dirname + "/public"));
 mongoose.connect(process.env.MONGO_URL)
 .then(() => console.log("🟢 MongoDB conectado"))
 .catch(err => {
-  console.log("🔴 erro MongoDB");
+  console.log("🔴 ERRO MONGODB:");
   console.log(err);
 });
 
@@ -44,10 +44,12 @@ const User = mongoose.model("User", {
 });
 
 /* ========================
-   SETUP ADMIN (RODAR 1X)
+   SETUP ADMIN
 ======================== */
 app.get("/setup", async (req, res) => {
   try {
+
+    console.log("🔥 SETUP RODANDO...");
 
     const existe = await User.findOne({ username: "admin" });
 
@@ -57,37 +59,34 @@ app.get("/setup", async (req, res) => {
 
     const hash = await bcrypt.hash("123456", 10);
 
-    await User.create({
+    const novo = await User.create({
       username: "admin",
       password: hash,
       role: "admin"
     });
 
+    console.log("✅ ADMIN CRIADO:", novo);
+
     res.send("admin criado com sucesso");
 
   } catch (err) {
-    console.log("ERRO SETUP:", err);
-    res.status(500).send("erro no setup");
+    console.log("🔥 ERRO SETUP REAL:");
+    console.log(err);
+    res.status(500).send("erro setup: " + err.message);
   }
 });
 
 /* ========================
-   LOGIN (CORRIGIDO + DEBUG)
+   LOGIN
 ======================== */
 app.post("/login", async (req, res) => {
   try {
 
-    console.log("🔥 LOGIN RECEBIDO:", req.body);
+    console.log("🔥 LOGIN:", req.body);
 
     const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ erro: "dados faltando" });
-    }
-
     const user = await User.findOne({ username });
-
-    console.log("👤 USUÁRIO ENCONTRADO:", user);
 
     if (!user) {
       return res.status(400).json({ erro: "usuário não existe" });
@@ -95,15 +94,12 @@ app.post("/login", async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password);
 
-    console.log("🔐 SENHA CORRETA?:", ok);
-
     if (!ok) {
       return res.status(400).json({ erro: "senha incorreta" });
     }
 
     if (!process.env.JWT_SECRET) {
-      console.log("❌ JWT_SECRET NÃO CONFIGURADO");
-      return res.status(500).json({ erro: "JWT_SECRET faltando no Render" });
+      return res.status(500).json({ erro: "JWT_SECRET não configurado" });
     }
 
     const token = jwt.sign(
@@ -112,18 +108,17 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    console.log("✅ LOGIN OK");
-
     res.json({ token });
 
   } catch (err) {
-    console.log("🔥 ERRO REAL LOGIN:", err);
+    console.log("🔥 ERRO LOGIN:");
+    console.log(err);
     res.status(500).json({ erro: "erro interno login" });
   }
 });
 
 /* ========================
-   AUTH ADMIN
+   AUTH
 ======================== */
 function auth(req, res, next) {
 
@@ -146,13 +141,11 @@ function auth(req, res, next) {
    PRODUTOS
 ======================== */
 
-// listar
 app.get("/produtos", async (req, res) => {
   const produtos = await Produto.find();
   res.json(produtos);
 });
 
-// criar (admin)
 app.post("/admin/produto", auth, async (req, res) => {
 
   if (req.user.role !== "admin") {
