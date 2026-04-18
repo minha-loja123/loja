@@ -7,12 +7,14 @@ require("dotenv").config();
 
 const app = express();
 
+console.log("🔥 NOVA VERSÃO DO SERVER RODANDO");
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
 /* ========================
-   CONEXÃO MONGODB (MELHORADA)
+   CONEXÃO MONGODB
 ======================== */
 mongoose.connect(process.env.MONGO_URL)
 .then(() => console.log("🟢 MongoDB conectado"))
@@ -113,16 +115,17 @@ function auth(req, res, next) {
    PRODUTOS
 ======================== */
 
-// listar
+// listar produtos
 app.get("/produtos", async (req, res) => {
   const produtos = await Produto.find();
   res.json(produtos);
 });
 
-// criar (admin)
+// criar produto (admin)
 app.post("/admin/produto", auth, async (req, res) => {
-  if (req.user.role !== "admin")
+  if (req.user.role !== "admin") {
     return res.status(403).send("Sem permissão");
+  }
 
   const novo = await Produto.create(req.body);
   res.json(novo);
@@ -131,13 +134,21 @@ app.post("/admin/produto", auth, async (req, res) => {
 /* ========================
    PEDIDOS
 ======================== */
+
 app.post("/pedido", async (req, res) => {
   const pedido = await Pedido.create(req.body);
   res.json({ mensagem: "Pedido salvo!", pedido });
 });
 
 /* ========================
-   START SERVER
+   TESTE
+======================== */
+app.get("/teste", (req, res) => {
+  res.send("Servidor OK 🚀");
+});
+
+/* ========================
+   START
 ======================== */
 app.listen(process.env.PORT || 3000, () => {
   console.log("🚀 servidor rodando");
