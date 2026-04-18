@@ -1,53 +1,144 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// 🔥 SERVIR ARQUIVOS HTML
 app.use(express.static(__dirname + "/public"));
 
-// 🔥 ROTA PRINCIPAL
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+/* ========================
+   CONEXÃO MONGODB (MELHORADA)
+======================== */
+mongoose.connect(process.env.MONGO_URL)
+.then(() => console.log("🟢 MongoDB conectado"))
+.catch(err => {
+  console.log("🔴 erro MongoDB");
+  console.log(err);
 });
 
-// 🔥 TESTE
-app.get("/teste", (req, res) => {
-  res.send("Servidor OK");
+/* ========================
+   MODELOS
+======================== */
+
+const Produto = mongoose.model("Produto", {
+  nome: String,
+  preco: Number,
+  img: String
 });
 
-// 🔥 PRODUTOS FAKE (TEMPORÁRIO PRA TESTE)
-let produtos = [
-  { id: 1, nome: "Produto Teste", preco: 50, img: "https://via.placeholder.com/150" }
-];
+const Pedido = mongoose.model("Pedido", {
+  carrinho: Array,
+  total: Number,
+  data: { type: Date, default: Date.now }
+});
 
-// LISTAR PRODUTOS
-app.get("/produtos", (req, res) => {
+const User = mongoose.model("User", {
+  username: String,
+  password: String,
+  role: String
+});
+
+/* ========================
+   SETUP ADMIN (RODAR 1X)
+======================== */
+app.get("/setup", async (req, res) => {
+  try {
+    const existe = await User.findOne({ username: "admin" });
+
+    if (existe) {
+      return res.send("admin já existe");
+    }
+
+    const hash = await bcrypt.hash("123456", 10);
+
+    await User.create({
+      username: "admin",
+      password: hash,
+      role: "admin"
+    });
+
+    res.send("admin criado com sucesso");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("erro no setup");
+  }
+});
+
+/* ========================
+   LOGIN
+======================== */
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  const user = await User.findOne({ username });
+
+  if (!user) return res.status(400).json({ erro: "Usuário não existe" });
+
+  const ok = await bcrypt.compare(password, user.password);
+
+  if (!ok) return res.status(400).json({ erro: "Senha incorreta" });
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  res.json({ token });
+});
+
+/* ========================
+   AUTH ADMIN
+======================== */
+function auth(req, res, next) {
+  const token = req.headers.authorization;
+
+  if (!token) return res.status(401).send("Sem token");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).send("Token inválido");
+  }
+}
+
+/* ========================
+   PRODUTOS
+======================== */
+
+// listar
+app.get("/produtos", async (req, res) => {
+  const produtos = await Produto.find();
   res.json(produtos);
 });
 
-// CRIAR PRODUTO
-app.post("/admin/produto", (req, res) => {
-  const novo = {
-    id: Date.now(),
-    nome: req.body.nome,
-    preco: req.body.preco,
-    img: req.body.img
-  };
+// criar (admin)
+app.post("/admin/produto", auth, async (req, res) => {
+  if (req.user.role !== "admin")
+    return res.status(403).send("Sem permissão");
 
-  produtos.push(novo);
+  const novo = await Produto.create(req.body);
   res.json(novo);
 });
 
-// PEDIDO
-app.post("/pedido", (req, res) => {
-  console.log("PEDIDO:", req.body);
-  res.json({ mensagem: "Pedido recebido!" });
+/* ========================
+   PEDIDOS
+======================== */
+app.post("/pedido", async (req, res) => {
+  const pedido = await Pedido.create(req.body);
+  res.json({ mensagem: "Pedido salvo!", pedido });
 });
 
+/* ========================
+   START SERVER
+======================== */
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🚀 Servidor rodando");
+  console.log("🚀 servidor rodando");
 });

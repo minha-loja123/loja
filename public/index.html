@@ -6,7 +6,7 @@
   <style>
     body { 
       font-family: Arial; 
-      background:#f5f5f5; 
+      background:#f2f2f2; 
       margin:0; 
     }
 
@@ -16,23 +16,27 @@
       padding:20px; 
       text-align:center; 
       margin:0;
+      font-size:22px;
     }
 
     .topo {
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .topo input {
-      width: 80%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      width: 85%;
+      max-width: 500px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      outline: none;
     }
 
     .container { 
-      max-width:1000px; 
+      max-width:1100px; 
       margin:auto; 
       padding:20px; 
     }
@@ -45,55 +49,102 @@
 
     .card {
       background:white;
-      padding:10px;
-      border-radius:10px;
+      border-radius:12px;
+      overflow:hidden;
       text-align:center;
-      box-shadow:0 3px 10px rgba(0,0,0,0.1);
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
       transition: 0.2s;
     }
 
     .card:hover {
-      transform: scale(1.03);
+      transform: translateY(-3px);
     }
 
-    /* 🔥 AQUI ESTÁ A CORREÇÃO DA IMAGEM */
+    /* 🔥 IMAGEM ESTILO LOJA */
     .card img {
       width:100%;
       height:200px;
-      object-fit:cover;
-      object-position:center;
-      border-radius:10px;
-      display:block;
+      object-fit:contain;
+      background:#fff;
+      padding:8px;
     }
 
     .card h3 {
       font-size: 14px;
-      margin: 10px 0 5px;
+      margin: 10px 8px 5px;
+      color:#333;
     }
 
     .card p {
       font-size: 16px;
       color:#ee4d2d;
       font-weight:bold;
-      margin: 5px 0;
+      margin: 5px 0 10px;
     }
 
-    button {
+    .card button {
       background:#ee4d2d;
       color:#fff;
       border:none;
-      padding:8px;
+      padding:10px;
       border-radius:8px;
       cursor:pointer;
-      margin-top:5px;
-      width:100%;
+      width:90%;
+      margin-bottom:10px;
+      font-weight:bold;
     }
 
+    .card button:hover {
+      background:#d94326;
+    }
+
+    /* CARRINHO */
     #carrinho {
       background:white;
-      padding:10px;
+      padding:15px;
       margin-top:20px;
+      border-radius:12px;
+      box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    #carrinho p {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:8px 0;
+    }
+
+    #carrinho button {
+      width:30px;
+      height:30px;
+      border:none;
+      background:#ee4d2d;
+      color:#fff;
+      border-radius:6px;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    #total {
+      margin-top:10px;
+      font-size:18px;
+      font-weight:bold;
+    }
+
+    .finalizar {
+      background:#28a745;
+      color:#fff;
+      border:none;
+      padding:12px;
+      width:100%;
       border-radius:10px;
+      cursor:pointer;
+      margin-top:10px;
+      font-weight:bold;
+    }
+
+    .finalizar:hover {
+      background:#218838;
     }
 
   </style>
@@ -111,12 +162,12 @@
 
   <div id="produtos"></div>
 
-  <h2>Carrinho</h2>
+  <h2>🛍 Carrinho</h2>
   <div id="carrinho"></div>
 
   <h3 id="total">Total: R$ 0</h3>
 
-  <button onclick="finalizar()">Finalizar Compra</button>
+  <button class="finalizar" onclick="finalizar()">Finalizar Compra</button>
 
 </div>
 
@@ -175,10 +226,12 @@ function render(){
   carrinho.forEach(i => {
     div.innerHTML += `
       <p>
-        ${i.nome} - R$ ${i.preco} 
-        <button onclick="menos('${i.nome}')">-</button>
-        ${i.qtd}
-        <button onclick="mais('${i.nome}')">+</button>
+        <span>${i.nome} - R$ ${i.preco}</span>
+        <span>
+          <button onclick="menos('${i.nome}')">-</button>
+          ${i.qtd}
+          <button onclick="mais('${i.nome}')">+</button>
+        </span>
       </p>
     `;
     total += i.preco * i.qtd;
