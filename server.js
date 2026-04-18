@@ -66,30 +66,44 @@ app.get("/setup", async (req, res) => {
     res.send("admin criado com sucesso");
 
   } catch (err) {
-    console.log(err);
+    console.log("ERRO SETUP:", err);
     res.status(500).send("erro no setup");
   }
 });
 
 /* ========================
-   LOGIN
+   LOGIN (CORRIGIDO + DEBUG)
 ======================== */
 app.post("/login", async (req, res) => {
-
   try {
+
+    console.log("🔥 LOGIN RECEBIDO:", req.body);
 
     const { username, password } = req.body;
 
+    if (!username || !password) {
+      return res.status(400).json({ erro: "dados faltando" });
+    }
+
     const user = await User.findOne({ username });
 
+    console.log("👤 USUÁRIO ENCONTRADO:", user);
+
     if (!user) {
-      return res.status(400).json({ erro: "Usuário não existe" });
+      return res.status(400).json({ erro: "usuário não existe" });
     }
 
     const ok = await bcrypt.compare(password, user.password);
 
+    console.log("🔐 SENHA CORRETA?:", ok);
+
     if (!ok) {
-      return res.status(400).json({ erro: "Senha incorreta" });
+      return res.status(400).json({ erro: "senha incorreta" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.log("❌ JWT_SECRET NÃO CONFIGURADO");
+      return res.status(500).json({ erro: "JWT_SECRET faltando no Render" });
     }
 
     const token = jwt.sign(
@@ -98,10 +112,12 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    console.log("✅ LOGIN OK");
+
     res.json({ token });
 
   } catch (err) {
-    console.log("ERRO LOGIN:", err);
+    console.log("🔥 ERRO REAL LOGIN:", err);
     res.status(500).json({ erro: "erro interno login" });
   }
 });
@@ -155,6 +171,7 @@ app.post("/pedido", async (req, res) => {
     const pedido = await Pedido.create(req.body);
     res.json({ mensagem: "Pedido salvo!", pedido });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ erro: "erro ao salvar pedido" });
   }
 });
