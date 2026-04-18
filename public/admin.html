@@ -58,11 +58,11 @@
 
 <!-- PAINEL -->
 <div class="box hidden" id="adminBox">
-  <h2>🔥 Painel Produtos</h2>
+  <h2>🔥 Produtos</h2>
 
-  <input id="nome" placeholder="Nome do produto">
+  <input id="nome" placeholder="Nome">
   <input id="preco" placeholder="Preço">
-  <input id="img" placeholder="URL da imagem">
+  <input id="img" placeholder="Imagem URL">
 
   <button onclick="criar()">Criar Produto</button>
 
@@ -83,23 +83,19 @@ if(token){
   carregar();
 }
 
-// 🔐 LOGIN
+// LOGIN
 function login(){
-
-  console.log("tentando login...");
 
   fetch("https://loja-cd3v.onrender.com/login", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
-      username: document.getElementById("user").value,
-      password: document.getElementById("pass").value
+      username: user.value,
+      password: pass.value
     })
   })
   .then(r => r.json())
   .then(data => {
-
-    console.log("resposta login:", data);
 
     if(data.token){
       localStorage.setItem("token", data.token);
@@ -110,12 +106,12 @@ function login(){
 
   })
   .catch(err => {
-    console.log("ERRO LOGIN:", err);
-    alert("Erro no login (veja o console F12)");
+    console.log(err);
+    alert("Erro no login");
   });
 }
 
-// ➕ CRIAR PRODUTO
+// CRIAR PRODUTO
 function criar(){
 
   fetch("https://loja-cd3v.onrender.com/admin/produto", {
@@ -125,23 +121,21 @@ function criar(){
       "Authorization": token
     },
     body: JSON.stringify({
-      nome: document.getElementById("nome").value,
-      preco: Number(document.getElementById("preco").value),
-      img: document.getElementById("img").value
+      nome: nome.value,
+      preco: Number(preco.value),
+      img: img.value
     })
   })
-  .then(() => carregar())
-  .catch(err => console.log(err));
+  .then(() => carregar());
 }
 
-// 📦 LISTAR PRODUTOS
+// LISTAR
 function carregar(){
 
   fetch("https://loja-cd3v.onrender.com/produtos")
   .then(r => r.json())
   .then(data => {
 
-    const lista = document.getElementById("lista");
     lista.innerHTML = "";
 
     data.forEach(p => {
