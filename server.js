@@ -7,36 +7,24 @@ require("dotenv").config();
 
 const app = express();
 
-console.log("🔥 NOVA VERSÃO DO SERVER RODANDO");
-
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
 /* ========================
-   CONEXÃO MONGODB
+   MONGO
 ======================== */
 mongoose.connect(process.env.MONGO_URL)
 .then(() => console.log("🟢 MongoDB conectado"))
-.catch(err => {
-  console.log("🔴 erro MongoDB");
-  console.log(err);
-});
+.catch(err => console.log("🔴 erro MongoDB", err));
 
 /* ========================
    MODELOS
 ======================== */
-
 const Produto = mongoose.model("Produto", {
   nome: String,
   preco: Number,
   img: String
-});
-
-const Pedido = mongoose.model("Pedido", {
-  carrinho: Array,
-  total: Number,
-  data: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model("User", {
@@ -46,29 +34,22 @@ const User = mongoose.model("User", {
 });
 
 /* ========================
-   SETUP ADMIN (RODAR 1X)
+   SETUP ADMIN (1x)
 ======================== */
 app.get("/setup", async (req, res) => {
-  try {
-    const existe = await User.findOne({ username: "admin" });
+  const existe = await User.findOne({ username: "admin" });
 
-    if (existe) {
-      return res.send("admin já existe");
-    }
+  if (existe) return res.send("admin já existe");
 
-    const hash = await bcrypt.hash("123456", 10);
+  const hash = await bcrypt.hash("123456", 10);
 
-    await User.create({
-      username: "admin",
-      password: hash,
-      role: "admin"
-    });
+  await User.create({
+    username: "admin",
+    password: hash,
+    role: "admin"
+  });
 
-    res.send("admin criado com sucesso");
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("erro no setup");
-  }
+  res.send("admin criado");
 });
 
 /* ========================
@@ -95,7 +76,7 @@ app.post("/login", async (req, res) => {
 });
 
 /* ========================
-   AUTH ADMIN
+   AUTH
 ======================== */
 function auth(req, res, next) {
   const token = req.headers.authorization;
@@ -106,7 +87,7 @@ function auth(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).send("Token inválido");
   }
 }
@@ -114,37 +95,32 @@ function auth(req, res, next) {
 /* ========================
    PRODUTOS
 ======================== */
-
-// listar produtos
 app.get("/produtos", async (req, res) => {
   const produtos = await Produto.find();
   res.json(produtos);
 });
 
-// criar produto (admin)
 app.post("/admin/produto", auth, async (req, res) => {
-  if (req.user.role !== "admin") {
+  if (req.user.role !== "admin")
     return res.status(403).send("Sem permissão");
-  }
 
   const novo = await Produto.create(req.body);
   res.json(novo);
 });
 
-/* ========================
-   PEDIDOS
-======================== */
+app.put("/admin/produto/:id", auth, async (req, res) => {
+  const produto = await Produto.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
 
-app.post("/pedido", async (req, res) => {
-  const pedido = await Pedido.create(req.body);
-  res.json({ mensagem: "Pedido salvo!", pedido });
+  res.json(produto);
 });
 
-/* ========================
-   TESTE
-======================== */
-app.get("/teste", (req, res) => {
-  res.send("Servidor OK 🚀");
+app.delete("/admin/produto/:id", auth, async (req, res) => {
+  await Produto.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
 });
 
 /* ========================
