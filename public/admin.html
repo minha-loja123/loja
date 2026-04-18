@@ -30,12 +30,25 @@
     button {
       cursor:pointer;
     }
+
+    .hidden { display:none; }
   </style>
 </head>
 
 <body>
 
-<div class="box">
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+  <h2>🔐 Login Admin</h2>
+
+  <input id="user" placeholder="Usuário">
+  <input id="pass" type="password" placeholder="Senha">
+
+  <button onclick="login()">Entrar</button>
+</div>
+
+<!-- PAINEL -->
+<div class="box hidden" id="adminBox">
   <h2>🔥 Admin Produtos</h2>
 
   <input id="nome" placeholder="Nome do produto">
@@ -49,19 +62,54 @@
 
 <script>
 
-function criar(){
-  fetch("https://loja-cd3v.onrender.com/admin/produto", {
+let token = localStorage.getItem("token");
+
+// se já estiver logado
+if(token){
+  loginBox.classList.add("hidden");
+  adminBox.classList.remove("hidden");
+  carregar();
+}
+
+// LOGIN
+function login(){
+  fetch("https://loja-cd3v.onrender.com/login", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
+      username: user.value,
+      password: pass.value
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if(data.token){
+      localStorage.setItem("token", data.token);
+      location.reload();
+    } else {
+      alert("Erro no login");
+    }
+  });
+}
+
+// CRIAR
+function criar(){
+  fetch("https://loja-cd3v.onrender.com/admin/produto", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization": token
+    },
+    body: JSON.stringify({
       nome: nome.value,
-      preco: preco.value,
+      preco: Number(preco.value),
       img: img.value
     })
   })
   .then(() => carregar());
 }
 
+// LISTAR
 function carregar(){
   fetch("https://loja-cd3v.onrender.com/produtos")
   .then(r => r.json())
@@ -82,27 +130,37 @@ function carregar(){
   });
 }
 
+// EDITAR
 function editar(id){
-  const nome = prompt("Novo nome:");
-  const preco = prompt("Novo preço:");
-  const img = prompt("Nova imagem (URL):");
+  const novoNome = prompt("Novo nome:");
+  const novoPreco = prompt("Novo preço:");
+  const novaImg = prompt("Nova imagem:");
 
   fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
     method:"PUT",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ nome, preco, img })
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization": token
+    },
+    body: JSON.stringify({
+      nome: novoNome,
+      preco: Number(novoPreco),
+      img: novaImg
+    })
   })
   .then(() => carregar());
 }
 
+// DELETAR
 function deletar(id){
   fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
-    method:"DELETE"
+    method:"DELETE",
+    headers:{
+      "Authorization": token
+    }
   })
   .then(() => carregar());
 }
-
-carregar();
 
 </script>
 
