@@ -4,7 +4,11 @@
   <title>Painel Admin</title>
 
   <style>
-    body { font-family: Arial; background:#f5f5f5; padding:20px; }
+    body {
+      font-family: Arial;
+      background:#f5f5f5;
+      padding:20px;
+    }
 
     .box {
       background:white;
@@ -17,21 +21,28 @@
     input, button {
       width:100%;
       padding:10px;
-      margin:5px 0;
-    }
-
-    .item {
-      background:white;
-      padding:10px;
       margin-top:10px;
-      border-radius:8px;
+      border-radius:6px;
+      border:1px solid #ccc;
     }
 
     button {
       cursor:pointer;
+      background:#ee4d2d;
+      color:white;
+      border:none;
     }
 
-    .hidden { display:none; }
+    .hidden {
+      display:none;
+    }
+
+    .item {
+      background:#eee;
+      padding:10px;
+      margin-top:10px;
+      border-radius:8px;
+    }
   </style>
 </head>
 
@@ -49,7 +60,7 @@
 
 <!-- PAINEL -->
 <div class="box hidden" id="adminBox">
-  <h2>🔥 Admin Produtos</h2>
+  <h2>🔥 Painel Produtos</h2>
 
   <input id="nome" placeholder="Nome do produto">
   <input id="preco" placeholder="Preço">
@@ -64,6 +75,9 @@
 
 let token = localStorage.getItem("token");
 
+const loginBox = document.getElementById("loginBox");
+const adminBox = document.getElementById("adminBox");
+
 // se já estiver logado
 if(token){
   loginBox.classList.add("hidden");
@@ -73,26 +87,32 @@ if(token){
 
 // LOGIN
 function login(){
+
   fetch("https://loja-cd3v.onrender.com/login", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
-      username: user.value,
-      password: pass.value
+      username: document.getElementById("user").value,
+      password: document.getElementById("pass").value
     })
   })
   .then(r => r.json())
   .then(data => {
+
     if(data.token){
       localStorage.setItem("token", data.token);
       location.reload();
     } else {
-      alert("Erro no login");
+      alert("Login inválido");
     }
+
+  })
+  .catch(err => {
+    alert("Erro no login");
   });
 }
 
-// CRIAR
+// CRIAR PRODUTO
 function criar(){
   fetch("https://loja-cd3v.onrender.com/admin/produto", {
     method:"POST",
@@ -101,65 +121,31 @@ function criar(){
       "Authorization": token
     },
     body: JSON.stringify({
-      nome: nome.value,
-      preco: Number(preco.value),
-      img: img.value
+      nome: document.getElementById("nome").value,
+      preco: Number(document.getElementById("preco").value),
+      img: document.getElementById("img").value
     })
   })
   .then(() => carregar());
 }
 
-// LISTAR
+// LISTAR PRODUTOS
 function carregar(){
   fetch("https://loja-cd3v.onrender.com/produtos")
   .then(r => r.json())
   .then(data => {
+    const lista = document.getElementById("lista");
     lista.innerHTML = "";
 
     data.forEach(p => {
       lista.innerHTML += `
         <div class="item">
-          <b>${p.nome}</b> - R$ ${p.preco}
-          <br><br>
-
-          <button onclick="editar('${p._id}')">Editar</button>
-          <button onclick="deletar('${p._id}')" style="background:red;color:white;">Deletar</button>
+          <b>${p.nome}</b><br>
+          R$ ${p.preco}
         </div>
       `;
     });
   });
-}
-
-// EDITAR
-function editar(id){
-  const novoNome = prompt("Novo nome:");
-  const novoPreco = prompt("Novo preço:");
-  const novaImg = prompt("Nova imagem:");
-
-  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
-    method:"PUT",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization": token
-    },
-    body: JSON.stringify({
-      nome: novoNome,
-      preco: Number(novoPreco),
-      img: novaImg
-    })
-  })
-  .then(() => carregar());
-}
-
-// DELETAR
-function deletar(id){
-  fetch("https://loja-cd3v.onrender.com/admin/produto/" + id, {
-    method:"DELETE",
-    headers:{
-      "Authorization": token
-    }
-  })
-  .then(() => carregar());
 }
 
 </script>
