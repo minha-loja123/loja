@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Painel Admin</title>
+  <title>Admin Loja</title>
 
   <style>
     body {
@@ -27,15 +27,13 @@
     }
 
     button {
-      cursor:pointer;
       background:#ee4d2d;
       color:white;
       border:none;
+      cursor:pointer;
     }
 
-    .hidden {
-      display:none;
-    }
+    .hidden { display:none; }
 
     .item {
       background:#eee;
@@ -66,7 +64,7 @@
   <input id="preco" placeholder="Preço">
   <input id="img" placeholder="URL da imagem">
 
-  <button onclick="criar()">Cadastrar Produto</button>
+  <button onclick="criar()">Criar Produto</button>
 
   <div id="lista"></div>
 </div>
@@ -78,15 +76,17 @@ let token = localStorage.getItem("token");
 const loginBox = document.getElementById("loginBox");
 const adminBox = document.getElementById("adminBox");
 
-// se já estiver logado
+// se já logado
 if(token){
   loginBox.classList.add("hidden");
   adminBox.classList.remove("hidden");
   carregar();
 }
 
-// LOGIN
+// 🔐 LOGIN
 function login(){
+
+  console.log("tentando login...");
 
   fetch("https://loja-cd3v.onrender.com/login", {
     method:"POST",
@@ -99,21 +99,25 @@ function login(){
   .then(r => r.json())
   .then(data => {
 
+    console.log("resposta login:", data);
+
     if(data.token){
       localStorage.setItem("token", data.token);
       location.reload();
     } else {
-      alert("Login inválido");
+      alert(data.erro || "Login inválido");
     }
 
   })
   .catch(err => {
-    alert("Erro no login");
+    console.log("ERRO LOGIN:", err);
+    alert("Erro no login (veja o console F12)");
   });
 }
 
-// CRIAR PRODUTO
+// ➕ CRIAR PRODUTO
 function criar(){
+
   fetch("https://loja-cd3v.onrender.com/admin/produto", {
     method:"POST",
     headers:{
@@ -126,14 +130,17 @@ function criar(){
       img: document.getElementById("img").value
     })
   })
-  .then(() => carregar());
+  .then(() => carregar())
+  .catch(err => console.log(err));
 }
 
-// LISTAR PRODUTOS
+// 📦 LISTAR PRODUTOS
 function carregar(){
+
   fetch("https://loja-cd3v.onrender.com/produtos")
   .then(r => r.json())
   .then(data => {
+
     const lista = document.getElementById("lista");
     lista.innerHTML = "";
 
@@ -145,7 +152,9 @@ function carregar(){
         </div>
       `;
     });
+
   });
+
 }
 
 </script>
