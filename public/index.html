@@ -1,63 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Loja Shopee Real</title>
+<title>App Loja</title>
 
 <style>
-body{font-family:Arial;background:#f5f5f5;margin:0}
+body{margin:0;font-family:Arial;background:#f5f5f5}
 
-header{background:#ee4d2d;color:#fff;padding:15px;text-align:center}
+/* HEADER APP */
+header{
+background:#ee4d2d;
+color:#fff;
+padding:15px;
+text-align:center;
+font-size:18px;
+}
 
-.banner img{width:100%;height:220px;object-fit:cover}
+/* CATEGORIAS */
+.tabs{
+display:flex;
+overflow:auto;
+background:#fff;
+padding:10px;
+gap:10px;
+}
 
-.container{max-width:1100px;margin:auto;padding:15px}
+.tab{
+padding:8px 12px;
+background:#eee;
+border-radius:20px;
+cursor:pointer;
+white-space:nowrap;
+}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+/* PRODUTOS */
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+padding:10px;
+}
 
-.card{background:#fff;padding:10px;border-radius:10px;text-align:center}
+.card{
+background:#fff;
+border-radius:10px;
+padding:10px;
+text-align:center;
+}
 
-.card img{width:100%;height:160px;object-fit:contain}
+.card img{
+width:100%;
+height:140px;
+object-fit:contain;
+}
 
-button{padding:8px;border:none;border-radius:6px;cursor:pointer}
-
-.buy{background:#ee4d2d;color:#fff}
-
-#cart{background:#fff;padding:10px;margin-top:20px;border-radius:10px}
+button{
+width:100%;
+padding:8px;
+border:none;
+border-radius:6px;
+background:#ee4d2d;
+color:#fff;
+}
 </style>
 
 </head>
 
 <body>
 
-<header>SHOPEE REAL MINI</header>
+<header>🛒 Minha Loja App</header>
 
-<div class="banner">
-<img src="/img/banner.jpg">
-</div>
-
-<div class="container">
+<div class="tabs" id="tabs"></div>
 
 <div class="grid" id="produtos"></div>
 
-<h2>Carrinho</h2>
-<div id="cart"></div>
-
-<h3 id="total">Total: 0</h3>
-
-<button onclick="finalizar()" style="width:100%;background:green;color:#fff;padding:10px">
-Finalizar WhatsApp
-</button>
-
-</div>
-
 <script>
 
-let carrinho = JSON.parse(localStorage.getItem("cart")) || [];
+let produtos = [];
 
 fetch("/produtos")
 .then(r=>r.json())
 .then(d=>{
+produtos = d;
 render(d);
+renderTabs(d);
 });
 
 function render(data){
@@ -70,54 +95,30 @@ div.innerHTML+=`
 <img src="${p.img}">
 <h3>${p.nome}</h3>
 <p>R$ ${p.preco}</p>
-<button class="buy" onclick="add('${p.nome}',${p.preco})">Comprar</button>
+<button onclick="buy('${p.nome}',${p.preco})">Comprar</button>
 </div>`;
 });
 }
 
-function add(nome,preco){
-let item=carrinho.find(i=>i.nome===nome);
+/* categorias estilo app */
+function renderTabs(data){
+const cats=[...new Set(data.map(p=>p.categoria))];
 
-if(item) item.qtd++;
-else carrinho.push({nome,preco,qtd:1});
-
-save();
-renderCart();
+document.getElementById("tabs").innerHTML=
+`<div class="tab" onclick="render(produtos)">Todos</div>`+
+cats.map(c=>`
+<div class="tab" onclick="filter('${c}')">${c}</div>
+`).join("");
 }
 
-function renderCart(){
-let div=document.getElementById("cart");
-div.innerHTML="";
-
-let total=0;
-
-carrinho.forEach(i=>{
-div.innerHTML+=`<p>${i.nome} x${i.qtd}</p>`;
-total+=i.preco*i.qtd;
-});
-
-document.getElementById("total").innerText="Total: "+total;
+function filter(cat){
+render(produtos.filter(p=>p.categoria===cat));
 }
 
-function save(){
-localStorage.setItem("cart",JSON.stringify(carrinho));
+/* checkout */
+function buy(nome,preco){
+window.open("https://wa.me/5599999999999?text=Quero "+nome);
 }
-
-function finalizar(){
-let msg="Pedido:%0A";
-let total=0;
-
-carrinho.forEach(i=>{
-msg+=`${i.nome} x${i.qtd}%0A`;
-total+=i.preco*i.qtd;
-});
-
-msg+=`%0ATotal: ${total}`;
-
-window.open("https://wa.me/5599999999999?text="+msg);
-}
-
-renderCart();
 
 </script>
 

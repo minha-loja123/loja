@@ -1,20 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Shopee</title>
+<title>Admin App</title>
+
+<style>
+body{font-family:Arial;background:#eee;padding:10px}
+
+.box{background:#fff;padding:10px;border-radius:10px}
+
+input,button{width:100%;padding:10px;margin:5px 0}
+
+.item{background:#ddd;padding:10px;margin-top:10px;border-radius:8px}
+</style>
+
 </head>
 
 <body>
 
-<h2>Login</h2>
+<div class="box">
+
+<h3>Login</h3>
 <input id="u">
-<input id="p">
+<input id="p" type="password">
 <button onclick="login()">Entrar</button>
 
 <hr>
 
-<h2>Pedidos</h2>
+<h3>Produtos</h3>
+
+<input id="n">
+<input id="pr">
+<input id="i">
+<input id="c">
+
+<button onclick="add()">Criar</button>
+
+<div id="list"></div>
+
+<hr>
+
+<h3>Pedidos</h3>
 <div id="pedidos"></div>
+
+</div>
 
 <script>
 
@@ -33,40 +61,53 @@ loadPedidos();
 });
 }
 
-function loadPedidos(){
-fetch("/admin/pedidos",{headers:{Authorization:token}})
-.then(r=>r.json())
-.then(d=>{
-pedidos.innerHTML="";
-
-d.forEach(p=>{
-pedidos.innerHTML+=`
-<div>
-<p>Total: ${p.total}</p>
-<p>Status: ${p.status}</p>
-
-<button onclick="update('${p._id}','pendente')">Pendente</button>
-<button onclick="update('${p._id}','enviado')">Enviado</button>
-<button onclick="update('${p._id}','entregue')">Entregue</button>
-
-<hr>
-</div>
-`;
-});
-});
-}
-
-function update(id,status){
-fetch("/admin/pedido/"+id,{
-method:"PUT",
+function add(){
+fetch("/admin/produto",{
+method:"POST",
 headers:{
 "Content-Type":"application/json",
 "Authorization":token
 },
-body:JSON.stringify({status})
+body:JSON.stringify({
+nome:n.value,
+preco:pr.value,
+img:i.value,
+categoria:c.value
+})
+})
+.then(()=>alert("criado"));
+}
+
+function loadPedidos(){
+fetch("/admin/pedidos")
+.then(r=>r.json())
+.then(d=>{
+pedidos.innerHTML="";
+d.forEach(p=>{
+pedidos.innerHTML+=`
+<div class="item">
+Total: ${p.total}<br>
+Status: ${p.status}
+
+<button onclick="status('${p._id}','enviado')">Enviar</button>
+<button onclick="status('${p._id}','entregue')">Entregue</button>
+</div>`;
+});
+});
+}
+
+function status(id,s){
+fetch("/admin/pedido/"+id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({status:s})
 })
 .then(()=>loadPedidos());
 }
+
+loadPedidos();
 
 </script>
 

@@ -34,7 +34,7 @@ const Pedido = mongoose.model("Pedido", {
   createdAt:{type:Date,default:Date.now}
 });
 
-/* ================= ADMIN SETUP ================= */
+/* ================= SETUP ADMIN ================= */
 app.get("/setup", async (req,res)=>{
   const exists = await User.findOne({username:"admin"});
   if(exists) return res.send("admin já existe");
@@ -69,26 +69,9 @@ app.post("/login", async (req,res)=>{
   res.json({token});
 });
 
-/* ================= AUTH ================= */
-function auth(req,res,next){
-  const token = req.headers.authorization;
-  if(!token) return res.status(401).json({error:"sem token"});
-
-  try{
-    req.user = jwt.verify(token,process.env.JWT_SECRET);
-    next();
-  }catch{
-    res.status(401).json({error:"token inválido"});
-  }
-}
-
 /* ================= PRODUTOS ================= */
 app.get("/produtos", async (req,res)=>{
   res.json(await Produto.find());
-});
-
-app.post("/admin/produto", auth, async (req,res)=>{
-  res.json(await Produto.create(req.body));
 });
 
 /* ================= PEDIDOS ================= */
@@ -96,19 +79,17 @@ app.post("/pedido", async (req,res)=>{
   res.json(await Pedido.create(req.body));
 });
 
-app.get("/admin/pedidos", auth, async (req,res)=>{
+app.get("/admin/pedidos", async (req,res)=>{
   res.json(await Pedido.find());
 });
 
-/* 🔥 STATUS DO PEDIDO */
-app.put("/admin/pedido/:id", auth, async (req,res)=>{
-  const p = await Pedido.findByIdAndUpdate(
-    req.params.id,
-    {status:req.body.status},
-    {new:true}
-  );
-
-  res.json(p);
+app.put("/admin/pedido/:id", async (req,res)=>{
+  res.json(await Pedido.findByIdAndUpdate(req.params.id,{
+    status:req.body.status
+  },{new:true}));
 });
 
-app.listen(3000,()=>console.log("🚀 Shopee real rodando"));
+/* ================= START ================= */
+app.listen(3000,()=>{
+  console.log("🚀 modo aplicativo rodando");
+});
