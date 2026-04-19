@@ -1,282 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Minha Loja</title>
+<title>Loja</title>
 
-  <style>
-    body { 
-      font-family: Arial; 
-      background:#f2f2f2; 
-      margin:0; 
-    }
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0}
 
-    h1 { 
-      background:#ee4d2d; 
-      color:#fff; 
-      padding:20px; 
-      text-align:center; 
-      margin:0;
-      font-size:22px;
-    }
+.banner img{width:100%;max-height:200px;object-fit:cover}
 
-    .topo {
-      padding: 12px;
-      text-align: center;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
+.container{max-width:1100px;margin:auto;padding:15px}
 
-    .topo input {
-      width: 85%;
-      max-width: 500px;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      outline: none;
-    }
+select{padding:10px;margin:10px 0;width:100%}
 
-    .container { 
-      max-width:1100px; 
-      margin:auto; 
-      padding:20px; 
-    }
+#produtos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 
-    #produtos {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap:20px;
-    }
+.card{background:#fff;padding:10px;border-radius:10px;text-align:center}
 
-    .card {
-      background:white;
-      border-radius:12px;
-      overflow:hidden;
-      text-align:center;
-      box-shadow:0 4px 12px rgba(0,0,0,0.08);
-      transition: 0.2s;
-    }
+.card img{width:100%;height:180px;object-fit:contain}
 
-    .card:hover {
-      transform: translateY(-3px);
-    }
+button{padding:8px;margin:5px;cursor:pointer}
+</style>
 
-    .card img {
-      width:100%;
-      height:200px;
-      object-fit:cover;
-      border-bottom:1px solid #eee;
-    }
-
-    .card h3 {
-      font-size: 14px;
-      margin: 10px 8px 5px;
-      color:#333;
-    }
-
-    .card p {
-      font-size: 16px;
-      color:#ee4d2d;
-      font-weight:bold;
-      margin: 5px 0 10px;
-    }
-
-    .card button {
-      background:#ee4d2d;
-      color:#fff;
-      border:none;
-      padding:10px;
-      border-radius:8px;
-      cursor:pointer;
-      width:90%;
-      margin-bottom:10px;
-      font-weight:bold;
-    }
-
-    .card button:hover {
-      background:#d94326;
-    }
-
-    #carrinho {
-      background:white;
-      padding:15px;
-      margin-top:20px;
-      border-radius:12px;
-      box-shadow:0 3px 10px rgba(0,0,0,0.08);
-    }
-
-    #carrinho p {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin:8px 0;
-    }
-
-    #carrinho button {
-      width:30px;
-      height:30px;
-      border:none;
-      background:#ee4d2d;
-      color:#fff;
-      border-radius:6px;
-      cursor:pointer;
-      font-weight:bold;
-    }
-
-    #total {
-      margin-top:10px;
-      font-size:18px;
-      font-weight:bold;
-    }
-
-    .finalizar {
-      background:#28a745;
-      color:#fff;
-      border:none;
-      padding:12px;
-      width:100%;
-      border-radius:10px;
-      cursor:pointer;
-      margin-top:10px;
-      font-weight:bold;
-    }
-
-    .finalizar:hover {
-      background:#218838;
-    }
-
-  </style>
 </head>
 
 <body>
 
-<h1>🛒 Minha Loja</h1>
-
-<div class="topo">
-  <input id="busca" placeholder="Buscar produto..." onkeyup="filtrar()">
+<div class="banner">
+  <img src="/img/banner.jpg">
 </div>
 
 <div class="container">
 
-  <div id="produtos"></div>
+<select id="filtro" onchange="filtrar()">
+  <option value="todos">Todos</option>
+  <option value="vape">Vape</option>
+  <option value="acessorio">Acessório</option>
+</select>
 
-  <h2>🛍 Carrinho</h2>
-  <div id="carrinho"></div>
-
-  <h3 id="total">Total: R$ 0</h3>
-
-  <button class="finalizar" onclick="finalizar()">Finalizar Compra</button>
+<div id="produtos"></div>
 
 </div>
 
 <script>
 
-let carrinho = [];
-let listaProdutos = [];
+let lista = [];
 
-fetch("https://loja-cd3v.onrender.com/produtos")
-.then(r => r.json())
-.then(data => {
-  listaProdutos = data;
-  mostrar(data);
+fetch("/produtos")
+.then(r=>r.json())
+.then(data=>{
+  lista = data;
+  render(data);
 });
 
-function mostrar(data){
+function render(data){
   const div = document.getElementById("produtos");
   div.innerHTML = "";
 
-  data.forEach(p => {
+  data.forEach(p=>{
     div.innerHTML += `
       <div class="card">
-        <img 
-          src="${p.img}" 
-          onerror="this.src='https://via.placeholder.com/300'"
-        >
+        <img src="${p.img}">
         <h3>${p.nome}</h3>
         <p>R$ ${p.preco}</p>
-        <button onclick="add('${p.nome}', ${p.preco})">Comprar</button>
+
+        <button onclick="zap('${p.nome}')">WhatsApp</button>
       </div>
     `;
   });
 }
 
 function filtrar(){
-  const termo = document.getElementById("busca").value.toLowerCase();
-  const filtrados = listaProdutos.filter(p => p.nome.toLowerCase().includes(termo));
-  mostrar(filtrados);
+  const v = filtro.value;
+
+  if(v === "todos") return render(lista);
+
+  render(lista.filter(p=>p.categoria === v));
 }
 
-function add(nome, preco){
-  const item = carrinho.find(i => i.nome === nome);
-
-  if(item){
-    item.qtd++;
-  } else {
-    carrinho.push({nome, preco, qtd:1});
-  }
-
-  render();
-}
-
-function render(){
-  let div = document.getElementById("carrinho");
-  div.innerHTML = "";
-
-  let total = 0;
-
-  carrinho.forEach(i => {
-    div.innerHTML += `
-      <p>
-        <span>${i.nome} - R$ ${i.preco}</span>
-        <span>
-          <button onclick="menos('${i.nome}')">-</button>
-          ${i.qtd}
-          <button onclick="mais('${i.nome}')">+</button>
-        </span>
-      </p>
-    `;
-    total += i.preco * i.qtd;
-  });
-
-  document.getElementById("total").innerText = "Total: R$ " + total;
-}
-
-function mais(nome){
-  const item = carrinho.find(i => i.nome === nome);
-  item.qtd++;
-  render();
-}
-
-function menos(nome){
-  const item = carrinho.find(i => i.nome === nome);
-  item.qtd--;
-
-  if(item.qtd <= 0){
-    carrinho = carrinho.filter(i => i.nome !== nome);
-  }
-
-  render();
-}
-
-function finalizar(){
-  let total = 0;
-  carrinho.forEach(i => total += i.preco * i.qtd);
-
-  fetch("https://loja-cd3v.onrender.com/pedido", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      carrinho,
-      total
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    alert(data.mensagem);
-    carrinho = [];
-    render();
-  });
+function zap(nome){
+  window.open("https://wa.me/5599999999999?text=Quero: "+nome);
 }
 
 </script>
