@@ -43,14 +43,15 @@ button{padding:8px;margin:5px;cursor:pointer}
 
 <script>
 
-let lista = [];
+let listaProdutos = [];
 
-fetch("/produtos")
-.then(r=>r.json())
-.then(data=>{
-  lista = data;
-  render(data);
-});
+async function carregar(){
+  const res = await fetch("/produtos");
+  const data = await res.json();
+
+  listaProdutos = data || [];
+  render(listaProdutos);
+}
 
 function render(data){
   const div = document.getElementById("produtos");
@@ -59,10 +60,9 @@ function render(data){
   data.forEach(p=>{
     div.innerHTML += `
       <div class="card">
-        <img src="${p.img}">
+        <img src="${p.img}" onerror="this.src='/img/coil.jpg'">
         <h3>${p.nome}</h3>
         <p>R$ ${p.preco}</p>
-
         <button onclick="zap('${p.nome}')">WhatsApp</button>
       </div>
     `;
@@ -70,16 +70,20 @@ function render(data){
 }
 
 function filtrar(){
-  const v = filtro.value;
+  const v = document.getElementById("filtro").value;
 
-  if(v === "todos") return render(lista);
-
-  render(lista.filter(p=>p.categoria === v));
+  if(v === "todos"){
+    render(listaProdutos);
+  } else {
+    render(listaProdutos.filter(p=>p.categoria === v));
+  }
 }
 
 function zap(nome){
   window.open("https://wa.me/5599999999999?text=Quero: "+nome);
 }
+
+document.addEventListener("DOMContentLoaded", carregar);
 
 </script>
 
