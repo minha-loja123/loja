@@ -1,68 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Pro 4</title>
-
-<style>
-body{font-family:Arial;background:#eee;padding:20px}
-.box{background:#fff;padding:15px;max-width:600px;margin:auto}
-input,button{width:100%;padding:10px;margin:5px 0}
-.item{background:#ddd;padding:10px;margin-top:10px}
-</style>
-
+<title>Admin</title>
 </head>
 
 <body>
 
-<div class="box">
-
 <h2>Login</h2>
-<input id="user">
-<input id="pass" type="password">
+<input id="u">
+<input id="p" type="password">
 <button onclick="login()">Entrar</button>
 
 <hr>
 
-<h2>Produtos</h2>
+<h2>Produto</h2>
 
-<input id="nome">
-<input id="preco">
-<input id="img">
-<input id="cat">
+<input id="n">
+<input id="pr">
+<input id="i">
+<input id="c">
 
-<button onclick="create()">Criar</button>
+<button onclick="add()">Criar</button>
 
-<div id="lista"></div>
-
-<hr>
-
-<h2>📦 Pedidos</h2>
-<div id="pedidos"></div>
-
-</div>
+<div id="list"></div>
 
 <script>
 
-let token = localStorage.getItem("token");
+let token="";
 
 function login(){
 fetch("/login",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:user.value,password:pass.value})
+body:JSON.stringify({username:u.value,password:p.value})
 })
 .then(r=>r.json())
 .then(d=>{
-if(d.token){
 token=d.token;
-localStorage.setItem("token",token);
 load();
-loadPedidos();
-}
 });
 }
 
-function create(){
+function add(){
 fetch("/admin/produto",{
 method:"POST",
 headers:{
@@ -70,10 +49,10 @@ headers:{
 "Authorization":token
 },
 body:JSON.stringify({
-nome:nome.value,
-preco:Number(preco.value),
-img:img.value,
-categoria:cat.value
+nome:n.value,
+preco:pr.value,
+img:i.value,
+categoria:c.value
 })
 })
 .then(()=>load());
@@ -83,31 +62,14 @@ function load(){
 fetch("/produtos")
 .then(r=>r.json())
 .then(d=>{
-lista.innerHTML="";
+list.innerHTML="";
 d.forEach(p=>{
-lista.innerHTML+=`<p>${p.nome}</p>`;
-});
-});
-}
-
-function loadPedidos(){
-fetch("/admin/pedidos",{headers:{Authorization:token}})
-.then(r=>r.json())
-.then(d=>{
-pedidos.innerHTML="";
-d.forEach(p=>{
-pedidos.innerHTML+=`
-<div class="item">
-Total: R$ ${p.total} <br>
-Status: ${p.status}
-</div>
-`;
+list.innerHTML+=`<p>${p.nome}</p>`;
 });
 });
 }
 
 load();
-loadPedidos();
 
 </script>
 

@@ -9,37 +9,34 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname + "/public"));
+app.use(express.static("public"));
 
-/* ================= MONGO ================= */
 mongoose.connect(process.env.MONGO_URL)
-.then(()=>console.log("🟢 MongoDB OK"))
-.catch(err=>console.log("🔴 erro MongoDB",err));
+.then(()=>console.log("🟢 Mongo conectado"))
+.catch(e=>console.log(e));
 
-/* ================= PRODUTO ================= */
+/* ================= MODELOS ================= */
 const Produto = mongoose.model("Produto", {
-  nome: String,
-  preco: Number,
-  img: String,
-  categoria: String
+  nome:String,
+  preco:Number,
+  img:String,
+  categoria:String
 });
 
-/* ================= USUÁRIO ================= */
 const User = mongoose.model("User", {
-  username: String,
-  password: String,
-  role: String
+  username:String,
+  password:String,
+  role:String
 });
 
-/* ================= PEDIDOS (NOVA PARTE) ================= */
 const Pedido = mongoose.model("Pedido", {
-  carrinho: Array,
-  total: Number,
-  status: { type: String, default: "pendente" },
-  data: { type: Date, default: Date.now }
+  carrinho:Array,
+  total:Number,
+  status:{type:String,default:"pendente"},
+  data:{type:Date,default:Date.now}
 });
 
-/* ================= SETUP ================= */
+/* ================= SETUP ADMIN ================= */
 app.get("/setup", async (req,res)=>{
   const existe = await User.findOne({username:"admin"});
   if(existe) return res.send("admin já existe");
@@ -57,25 +54,21 @@ app.get("/setup", async (req,res)=>{
 
 /* ================= LOGIN ================= */
 app.post("/login", async (req,res)=>{
-  try{
-    const {username,password} = req.body;
+  const {username,password} = req.body;
 
-    const user = await User.findOne({username});
-    if(!user) return res.status(400).json({erro:"não existe"});
+  const user = await User.findOne({username});
+  if(!user) return res.status(400).json({erro:"user não existe"});
 
-    const ok = await bcrypt.compare(password,user.password);
-    if(!ok) return res.status(400).json({erro:"senha errada"});
+  const ok = await bcrypt.compare(password,user.password);
+  if(!ok) return res.status(400).json({erro:"senha errada"});
 
-    const token = jwt.sign(
-      {id:user._id,role:user.role},
-      process.env.JWT_SECRET,
-      {expiresIn:"1d"}
-    );
+  const token = jwt.sign(
+    {id:user._id,role:user.role},
+    process.env.JWT_SECRET,
+    {expiresIn:"1d"}
+  );
 
-    res.json({token});
-  }catch{
-    res.status(500).json({erro:"erro login"});
-  }
+  res.json({token});
 });
 
 /* ================= AUTH ================= */
@@ -111,20 +104,14 @@ app.delete("/admin/produto/:id", auth, async (req,res)=>{
 
 /* ================= PEDIDOS ================= */
 app.post("/pedido", async (req,res)=>{
-  const pedido = await Pedido.create(req.body);
-  res.json(pedido);
+  res.json(await Pedido.create(req.body));
 });
 
 app.get("/admin/pedidos", auth, async (req,res)=>{
   res.json(await Pedido.find());
 });
 
-app.put("/admin/pedido/:id", auth, async (req,res)=>{
-  const p = await Pedido.findByIdAndUpdate(req.params.id,req.body,{new:true});
-  res.json(p);
-});
-
 /* ================= START ================= */
-app.listen(process.env.PORT || 3000, ()=>{
-  console.log("🚀 versão profissional 4 rodando");
+app.listen(3000, ()=>{
+  console.log("🚀 loja rodando");
 });
