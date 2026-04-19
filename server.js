@@ -11,16 +11,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
-/* =======================
-   MONGODB
-======================= */
+/* ================= MONGODB ================= */
 mongoose.connect(process.env.MONGO_URL)
-.then(() => console.log("🟢 MongoDB conectado"))
-.catch(err => console.log("🔴 erro MongoDB", err));
+.then(()=>console.log("🟢 MongoDB conectado"))
+.catch(err=>console.log("🔴 erro MongoDB",err));
 
-/* =======================
-   PRODUTO
-======================= */
+/* ================= MODELOS ================= */
 const Produto = mongoose.model("Produto", {
   nome: String,
   preco: Number,
@@ -28,18 +24,13 @@ const Produto = mongoose.model("Produto", {
   categoria: String
 });
 
-/* =======================
-   USER
-======================= */
 const User = mongoose.model("User", {
   username: String,
   password: String,
   role: String
 });
 
-/* =======================
-   SETUP ADMIN
-======================= */
+/* ================= SETUP ================= */
 app.get("/setup", async (req,res)=>{
   const existe = await User.findOne({username:"admin"});
   if(existe) return res.send("admin já existe");
@@ -55,9 +46,7 @@ app.get("/setup", async (req,res)=>{
   res.send("admin criado");
 });
 
-/* =======================
-   LOGIN
-======================= */
+/* ================= LOGIN ================= */
 app.post("/login", async (req,res)=>{
   try{
     const {username,password} = req.body;
@@ -75,15 +64,12 @@ app.post("/login", async (req,res)=>{
     );
 
     res.json({token});
-
   }catch(err){
     res.status(500).json({erro:"erro login"});
   }
 });
 
-/* =======================
-   AUTH
-======================= */
+/* ================= AUTH ================= */
 function auth(req,res,next){
   const token = req.headers.authorization;
   if(!token) return res.status(401).json({erro:"sem token"});
@@ -96,9 +82,7 @@ function auth(req,res,next){
   }
 }
 
-/* =======================
-   PRODUTOS
-======================= */
+/* ================= PRODUTOS ================= */
 app.get("/produtos", async (req,res)=>{
   const produtos = await Produto.find();
   res.json(produtos);
@@ -119,9 +103,7 @@ app.delete("/admin/produto/:id", auth, async (req,res)=>{
   res.json({ok:true});
 });
 
-/* =======================
-   START
-======================= */
+/* ================= START ================= */
 app.listen(process.env.PORT || 3000, ()=>{
   console.log("🚀 servidor rodando");
 });

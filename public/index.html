@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Loja</title>
+<title>Minha Loja</title>
 
 <style>
 body{font-family:Arial;background:#f2f2f2;margin:0}
@@ -10,7 +10,7 @@ body{font-family:Arial;background:#f2f2f2;margin:0}
 
 .container{max-width:1100px;margin:auto;padding:15px}
 
-select{padding:10px;margin:10px 0;width:100%}
+select{padding:10px;width:100%;margin:10px 0}
 
 #produtos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 
@@ -19,6 +19,8 @@ select{padding:10px;margin:10px 0;width:100%}
 .card img{width:100%;height:180px;object-fit:contain}
 
 button{padding:8px;margin:5px;cursor:pointer}
+
+#carrinho{background:#fff;padding:10px;margin-top:20px;border-radius:10px}
 </style>
 
 </head>
@@ -39,11 +41,20 @@ button{padding:8px;margin:5px;cursor:pointer}
 
 <div id="produtos"></div>
 
+<h2>🛒 Carrinho</h2>
+<div id="carrinho"></div>
+<h3 id="total">Total: R$ 0</h3>
+
+<button onclick="finalizar()" style="background:green;color:white;width:100%;padding:10px">
+Finalizar Compra
+</button>
+
 </div>
 
 <script>
 
 let listaProdutos = [];
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
 async function carregar(){
   const res = await fetch("/produtos");
@@ -51,6 +62,7 @@ async function carregar(){
 
   listaProdutos = data || [];
   render(listaProdutos);
+  renderCarrinho();
 }
 
 function render(data){
@@ -63,27 +75,101 @@ function render(data){
         <img src="${p.img}" onerror="this.src='/img/coil.jpg'">
         <h3>${p.nome}</h3>
         <p>R$ ${p.preco}</p>
+
+        <button onclick="add('${p.nome}',${p.preco})">Comprar</button>
         <button onclick="zap('${p.nome}')">WhatsApp</button>
       </div>
     `;
   });
 }
 
-function filtrar(){
-  const v = document.getElementById("filtro").value;
+function add(nome,preco){
 
-  if(v === "todos"){
-    render(listaProdutos);
+  let item = carrinho.find(i=>i.nome===nome);
+
+  if(item){
+    item.qtd++;
   } else {
-    render(listaProdutos.filter(p=>p.categoria === v));
+    carrinho.push({nome,preco,qtd:1});
   }
+
+  salvar();
+  renderCarrinho();
+}
+
+function renderCarrinho(){
+
+  const div = document.getElementById("carrinho");
+  div.innerHTML = "";
+
+  let total = 0;
+
+  carrinho.forEach(i=>{
+    div.innerHTML += `
+      <p>
+        ${i.nome} - R$ ${i.preco} x ${i.qtd}
+        <button onclick="menos('${i.nome}')">-</button>
+        <button onclick="mais('${i.nome}')">+</button>
+      </p>
+    `;
+
+    total += i.preco * i.qtd;
+  });
+
+  document.getElementById("total").innerText = "Total: R$ " + total;
+}
+
+function mais(nome){
+  carrinho.find(i=>i.nome===nome).qtd++;
+  salvar();
+  renderCarrinho();
+}
+
+function menos(nome){
+  let item = carrinho.find(i=>i.nome===nome);
+  item.qtd--;
+
+  if(item.qtd<=0){
+    carrinho = carrinho.filter(i=>i.nome!==nome);
+  }
+
+  salvar();
+  renderCarrinho();
+}
+
+function salvar(){
+  localStorage.setItem("carrinho",JSON.stringify(carrinho));
+}
+
+function finalizar(){
+  let msg = "🛒 Pedido:%0A";
+  let total = 0;
+
+  carrinho.forEach(i=>{
+    msg += `${i.nome} x${i.qtd} - R$ ${i.preco*i.qtd}%0A`;
+    total += i.preco*i.qtd;
+  });
+
+  msg += "%0A💰 Total: R$ " + total;
+
+  window.open("https://wa.me/5599999999999?text="+msg);
 }
 
 function zap(nome){
   window.open("https://wa.me/5599999999999?text=Quero: "+nome);
 }
 
-document.addEventListener("DOMContentLoaded", carregar);
+function filtrar(){
+  const v = filtro.value;
+
+  if(v==="todos"){
+    render(listaProdutos);
+  } else {
+    render(listaProdutos.filter(p=>p.categoria===v));
+  }
+}
+
+document.addEventListener("DOMContentLoaded",carregar);
 
 </script>
 
