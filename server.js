@@ -11,10 +11,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + "/public"));
 
-/* ================= MONGODB ================= */
+/* ================= MONGO ================= */
 mongoose.connect(process.env.MONGO_URL)
-.then(()=>console.log("🟢 MongoDB conectado"))
-.catch(err=>console.log("🔴 erro MongoDB",err));
+.then(()=>console.log("🟢 MongoDB OK"))
+.catch(err=>console.log("🔴 MongoDB erro",err));
 
 /* ================= MODELOS ================= */
 const Produto = mongoose.model("Produto", {
@@ -30,7 +30,7 @@ const User = mongoose.model("User", {
   role: String
 });
 
-/* ================= SETUP ================= */
+/* ================= SETUP ADMIN ================= */
 app.get("/setup", async (req,res)=>{
   const existe = await User.findOne({username:"admin"});
   if(existe) return res.send("admin já existe");
@@ -105,5 +105,5 @@ app.delete("/admin/produto/:id", auth, async (req,res)=>{
 
 /* ================= START ================= */
 app.listen(process.env.PORT || 3000, ()=>{
-  console.log("🚀 servidor rodando");
+  console.log("🚀 rodando versão profissional 2");
 });

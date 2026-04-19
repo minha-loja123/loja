@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin</title>
+<title>Admin Pro</title>
 
 <style>
 body{font-family:Arial;background:#eee;padding:20px}
@@ -16,7 +16,6 @@ input,button{width:100%;padding:10px;margin:5px 0}
 <div class="box">
 
 <h2>Login</h2>
-
 <input id="user">
 <input id="pass" type="password">
 <button onclick="login()">Entrar</button>
@@ -30,7 +29,7 @@ input,button{width:100%;padding:10px;margin:5px 0}
 <input id="img">
 <input id="cat">
 
-<button onclick="criar()">Criar</button>
+<button onclick="create()">Criar</button>
 
 <div id="lista"></div>
 
@@ -51,12 +50,12 @@ body:JSON.stringify({username:user.value,password:pass.value})
 if(d.token){
 token=d.token;
 localStorage.setItem("token",token);
-carregar();
+load();
 }
 });
 }
 
-function criar(){
+function create(){
 fetch("/admin/produto",{
 method:"POST",
 headers:{
@@ -70,10 +69,10 @@ img:img.value,
 categoria:cat.value
 })
 })
-.then(()=>carregar());
+.then(()=>load());
 }
 
-function carregar(){
+function load(){
 fetch("/produtos")
 .then(r=>r.json())
 .then(d=>{
@@ -84,7 +83,7 @@ lista.innerHTML+=`<p>${p.nome}</p>`;
 });
 }
 
-carregar();
+load();
 
 </script>
 
