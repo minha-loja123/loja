@@ -1,73 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>App Loja</title>
+<title>Minha Loja</title>
 
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
+header{background:#ee4d2d;color:#fff;padding:15px;text-align:center}
 
-/* HEADER APP */
-header{
-background:#ee4d2d;
-color:#fff;
-padding:15px;
-text-align:center;
-font-size:18px;
-}
+.banner img{width:100%;height:200px;object-fit:cover}
 
-/* CATEGORIAS */
-.tabs{
-display:flex;
-overflow:auto;
-background:#fff;
-padding:10px;
-gap:10px;
-}
+.tabs{display:flex;gap:10px;padding:10px;overflow:auto;background:#fff}
 
-.tab{
-padding:8px 12px;
-background:#eee;
-border-radius:20px;
-cursor:pointer;
-white-space:nowrap;
-}
+.tab{background:#eee;padding:8px 12px;border-radius:20px;cursor:pointer}
 
-/* PRODUTOS */
-.grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:10px;
-padding:10px;
-}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
 
-.card{
-background:#fff;
-border-radius:10px;
-padding:10px;
-text-align:center;
-}
+.card{background:#fff;padding:10px;border-radius:10px;text-align:center}
 
-.card img{
-width:100%;
-height:140px;
-object-fit:contain;
-}
+.card img{width:100%;height:140px;object-fit:contain}
 
-button{
-width:100%;
-padding:8px;
-border:none;
-border-radius:6px;
-background:#ee4d2d;
-color:#fff;
-}
+button{background:#ee4d2d;color:#fff;border:none;padding:8px;border-radius:6px;width:100%}
 </style>
 
 </head>
 
 <body>
 
-<header>🛒 Minha Loja App</header>
+<header>🛒 Minha Loja</header>
+
+<div class="banner">
+<img src="/img/banner.jpg">
+</div>
 
 <div class="tabs" id="tabs"></div>
 
@@ -100,22 +63,21 @@ div.innerHTML+=`
 });
 }
 
-/* categorias estilo app */
+/* 🔥 CORRIGIDO (SEM undefined) */
 function renderTabs(data){
-const cats=[...new Set(data.map(p=>p.categoria))];
+const cats=[...new Set(data
+.filter(p=>p.categoria)
+.map(p=>p.categoria))];
 
 document.getElementById("tabs").innerHTML=
 `<div class="tab" onclick="render(produtos)">Todos</div>`+
-cats.map(c=>`
-<div class="tab" onclick="filter('${c}')">${c}</div>
-`).join("");
+cats.map(c=>`<div class="tab" onclick="filter('${c}')">${c}</div>`).join("");
 }
 
 function filter(cat){
 render(produtos.filter(p=>p.categoria===cat));
 }
 
-/* checkout */
 function buy(nome,preco){
 window.open("https://wa.me/5599999999999?text=Quero "+nome);
 }

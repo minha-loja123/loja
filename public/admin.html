@@ -1,113 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin App</title>
-
-<style>
-body{font-family:Arial;background:#eee;padding:10px}
-
-.box{background:#fff;padding:10px;border-radius:10px}
-
-input,button{width:100%;padding:10px;margin:5px 0}
-
-.item{background:#ddd;padding:10px;margin-top:10px;border-radius:8px}
-</style>
-
+<title>Admin</title>
 </head>
 
 <body>
 
-<div class="box">
-
-<h3>Login</h3>
+<h2>Login</h2>
 <input id="u">
-<input id="p" type="password">
+<input id="p">
 <button onclick="login()">Entrar</button>
 
 <hr>
 
-<h3>Produtos</h3>
-
+<h2>Produto</h2>
 <input id="n">
 <input id="pr">
 <input id="i">
 <input id="c">
-
 <button onclick="add()">Criar</button>
-
-<div id="list"></div>
 
 <hr>
 
-<h3>Pedidos</h3>
+<h2>Pedidos</h2>
 <div id="pedidos"></div>
-
-</div>
 
 <script>
 
-let token="";
-
 function login(){
-fetch("/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:u.value,password:p.value})
-})
-.then(r=>r.json())
-.then(d=>{
-token=d.token;
-loadPedidos();
-});
+alert("login simples (sem token nesta versão)");
 }
 
 function add(){
 fetch("/admin/produto",{
 method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":token
-},
+headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 nome:n.value,
 preco:pr.value,
 img:i.value,
 categoria:c.value
 })
-})
-.then(()=>alert("criado"));
+}).then(()=>alert("criado"));
 }
 
-function loadPedidos(){
 fetch("/admin/pedidos")
 .then(r=>r.json())
 .then(d=>{
 pedidos.innerHTML="";
+
 d.forEach(p=>{
 pedidos.innerHTML+=`
-<div class="item">
-Total: ${p.total}<br>
-Status: ${p.status}
+<div>
+<p>Total: ${p.total}</p>
+<p>Status: ${p.status}</p>
 
 <button onclick="status('${p._id}','enviado')">Enviar</button>
 <button onclick="status('${p._id}','entregue')">Entregue</button>
 </div>`;
 });
 });
-}
 
 function status(id,s){
 fetch("/admin/pedido/"+id,{
 method:"PUT",
-headers:{
-"Content-Type":"application/json"
-},
+headers:{"Content-Type":"application/json"},
 body:JSON.stringify({status:s})
-})
-.then(()=>loadPedidos());
+}).then(()=>location.reload());
 }
-
-loadPedidos();
 
 </script>
 

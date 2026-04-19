@@ -11,7 +11,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-mongoose.connect(process.env.MONGO_URL);
+mongoose.connect(process.env.MONGO_URL)
+.then(()=>console.log("🟢 Mongo conectado"))
+.catch(e=>console.log(e));
 
 /* ================= MODELOS ================= */
 const Produto = mongoose.model("Produto", {
@@ -30,14 +32,14 @@ const User = mongoose.model("User", {
 const Pedido = mongoose.model("Pedido", {
   carrinho:Array,
   total:Number,
-  status:{type:String,default:"pendente"},
-  createdAt:{type:Date,default:Date.now}
+  status:{type:String, default:"pendente"},
+  createdAt:{type:Date, default:Date.now}
 });
 
 /* ================= SETUP ADMIN ================= */
 app.get("/setup", async (req,res)=>{
-  const exists = await User.findOne({username:"admin"});
-  if(exists) return res.send("admin já existe");
+  const existe = await User.findOne({username:"admin"});
+  if(existe) return res.send("admin já existe");
 
   const hash = await bcrypt.hash("123456",10);
 
@@ -55,10 +57,10 @@ app.post("/login", async (req,res)=>{
   const {username,password} = req.body;
 
   const user = await User.findOne({username});
-  if(!user) return res.status(400).json({error:"user não existe"});
+  if(!user) return res.status(400).json({erro:"user não existe"});
 
   const ok = await bcrypt.compare(password,user.password);
-  if(!ok) return res.status(400).json({error:"senha errada"});
+  if(!ok) return res.status(400).json({erro:"senha errada"});
 
   const token = jwt.sign(
     {id:user._id,role:user.role},
@@ -74,6 +76,11 @@ app.get("/produtos", async (req,res)=>{
   res.json(await Produto.find());
 });
 
+app.post("/admin/produto", async (req,res)=>{
+  const novo = await Produto.create(req.body);
+  res.json(novo);
+});
+
 /* ================= PEDIDOS ================= */
 app.post("/pedido", async (req,res)=>{
   res.json(await Pedido.create(req.body));
@@ -84,12 +91,14 @@ app.get("/admin/pedidos", async (req,res)=>{
 });
 
 app.put("/admin/pedido/:id", async (req,res)=>{
-  res.json(await Pedido.findByIdAndUpdate(req.params.id,{
-    status:req.body.status
-  },{new:true}));
+  const p = await Pedido.findByIdAndUpdate(
+    req.params.id,
+    {status:req.body.status},
+    {new:true}
+  );
+  res.json(p);
 });
 
-/* ================= START ================= */
 app.listen(3000,()=>{
-  console.log("🚀 modo aplicativo rodando");
+  console.log("🚀 loja rodando");
 });
