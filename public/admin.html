@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Pro 3</title>
+<title>Admin Pro 4</title>
 
 <style>
 body{font-family:Arial;background:#eee;padding:20px}
-.box{background:#fff;padding:15px;max-width:500px;margin:auto}
+.box{background:#fff;padding:15px;max-width:600px;margin:auto}
 input,button{width:100%;padding:10px;margin:5px 0}
+.item{background:#ddd;padding:10px;margin-top:10px}
 </style>
 
 </head>
@@ -16,14 +17,13 @@ input,button{width:100%;padding:10px;margin:5px 0}
 <div class="box">
 
 <h2>Login</h2>
-
 <input id="user">
 <input id="pass" type="password">
 <button onclick="login()">Entrar</button>
 
 <hr>
 
-<h2>Produto</h2>
+<h2>Produtos</h2>
 
 <input id="nome">
 <input id="preco">
@@ -33,6 +33,11 @@ input,button{width:100%;padding:10px;margin:5px 0}
 <button onclick="create()">Criar</button>
 
 <div id="lista"></div>
+
+<hr>
+
+<h2>📦 Pedidos</h2>
+<div id="pedidos"></div>
 
 </div>
 
@@ -52,6 +57,7 @@ if(d.token){
 token=d.token;
 localStorage.setItem("token",token);
 load();
+loadPedidos();
 }
 });
 }
@@ -84,7 +90,24 @@ lista.innerHTML+=`<p>${p.nome}</p>`;
 });
 }
 
+function loadPedidos(){
+fetch("/admin/pedidos",{headers:{Authorization:token}})
+.then(r=>r.json())
+.then(d=>{
+pedidos.innerHTML="";
+d.forEach(p=>{
+pedidos.innerHTML+=`
+<div class="item">
+Total: R$ ${p.total} <br>
+Status: ${p.status}
+</div>
+`;
+});
+});
+}
+
 load();
+loadPedidos();
 
 </script>
 

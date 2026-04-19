@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Loja Pro 3</title>
+<title>Loja Pro 4</title>
 
 <style>
 body{font-family:Arial;background:#f2f2f2;margin:0}
@@ -52,7 +52,7 @@ button{padding:8px;margin:5px;border:none;border-radius:5px;cursor:pointer}
 <div class="total" id="total">Total: R$ 0</div>
 
 <button onclick="finalizar()" style="width:100%;background:green;color:white;padding:10px">
-Finalizar no WhatsApp
+Finalizar Pedido
 </button>
 
 </div>
@@ -82,7 +82,6 @@ function render(data){
         <p>R$ ${p.preco}</p>
 
         <button class="buy" onclick="add('${p.nome}',${p.preco})">Comprar</button>
-        <button class="whats" onclick="zap('${p.nome}')">WhatsApp</button>
       </div>
     `;
   });
@@ -94,8 +93,7 @@ function add(nome,preco){
   if(item) item.qtd++;
   else carrinho.push({nome,preco,qtd:1});
 
-  save();
-  renderCart();
+  save(); renderCart();
 }
 
 function renderCart(){
@@ -106,33 +104,12 @@ function renderCart(){
 
   carrinho.forEach(i=>{
     div.innerHTML += `
-      <p>
-        ${i.nome} x${i.qtd}
-        <button onclick="less('${i.nome}')">-</button>
-        <button onclick="more('${i.nome}')">+</button>
-      </p>
+      <p>${i.nome} x${i.qtd}</p>
     `;
-
     total += i.preco*i.qtd;
   });
 
-  document.getElementById("total").innerText = "Total: R$ " + total;
-}
-
-function more(nome){
-  carrinho.find(i=>i.nome===nome).qtd++;
-  save(); renderCart();
-}
-
-function less(nome){
-  let item = carrinho.find(i=>i.nome===nome);
-  item.qtd--;
-
-  if(item.qtd<=0){
-    carrinho = carrinho.filter(i=>i.nome!==nome);
-  }
-
-  save(); renderCart();
+  document.getElementById("total").innerText = "Total: R$ "+total;
 }
 
 function save(){
@@ -146,22 +123,29 @@ function filtrar(){
   else render(lista.filter(p=>p.categoria===v));
 }
 
-function zap(nome){
-  window.open("https://wa.me/5599999999999?text=Quero: "+nome);
-}
-
+/* ================= PEDIDO (NOVA PARTE) ================= */
 function finalizar(){
-  let msg = "🛒 Pedido:%0A";
   let total = 0;
 
   carrinho.forEach(i=>{
-    msg += `${i.nome} x${i.qtd} - R$ ${i.preco*i.qtd}%0A`;
     total += i.preco*i.qtd;
   });
 
-  msg += "%0A💰 Total: R$ "+total;
-
-  window.open("https://wa.me/5599999999999?text="+msg);
+  fetch("/pedido",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      carrinho,
+      total
+    })
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    alert("Pedido enviado!");
+    carrinho = [];
+    save();
+    renderCart();
+  });
 }
 
 document.addEventListener("DOMContentLoaded",load);

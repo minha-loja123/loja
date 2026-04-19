@@ -13,10 +13,10 @@ app.use(express.static(__dirname + "/public"));
 
 /* ================= MONGO ================= */
 mongoose.connect(process.env.MONGO_URL)
-.then(()=>console.log("🟢 MongoDB conectado"))
+.then(()=>console.log("🟢 MongoDB OK"))
 .catch(err=>console.log("🔴 erro MongoDB",err));
 
-/* ================= MODELOS ================= */
+/* ================= PRODUTO ================= */
 const Produto = mongoose.model("Produto", {
   nome: String,
   preco: Number,
@@ -24,13 +24,22 @@ const Produto = mongoose.model("Produto", {
   categoria: String
 });
 
+/* ================= USUÁRIO ================= */
 const User = mongoose.model("User", {
   username: String,
   password: String,
   role: String
 });
 
-/* ================= SETUP ADMIN ================= */
+/* ================= PEDIDOS (NOVA PARTE) ================= */
+const Pedido = mongoose.model("Pedido", {
+  carrinho: Array,
+  total: Number,
+  status: { type: String, default: "pendente" },
+  data: { type: Date, default: Date.now }
+});
+
+/* ================= SETUP ================= */
 app.get("/setup", async (req,res)=>{
   const existe = await User.findOne({username:"admin"});
   if(existe) return res.send("admin já existe");
@@ -64,7 +73,7 @@ app.post("/login", async (req,res)=>{
     );
 
     res.json({token});
-  }catch(err){
+  }catch{
     res.status(500).json({erro:"erro login"});
   }
 });
@@ -84,18 +93,15 @@ function auth(req,res,next){
 
 /* ================= PRODUTOS ================= */
 app.get("/produtos", async (req,res)=>{
-  const produtos = await Produto.find();
-  res.json(produtos);
+  res.json(await Produto.find());
 });
 
 app.post("/admin/produto", auth, async (req,res)=>{
-  const p = await Produto.create(req.body);
-  res.json(p);
+  res.json(await Produto.create(req.body));
 });
 
 app.put("/admin/produto/:id", auth, async (req,res)=>{
-  const p = await Produto.findByIdAndUpdate(req.params.id,req.body,{new:true});
-  res.json(p);
+  res.json(await Produto.findByIdAndUpdate(req.params.id,req.body,{new:true}));
 });
 
 app.delete("/admin/produto/:id", auth, async (req,res)=>{
@@ -103,7 +109,22 @@ app.delete("/admin/produto/:id", auth, async (req,res)=>{
   res.json({ok:true});
 });
 
+/* ================= PEDIDOS ================= */
+app.post("/pedido", async (req,res)=>{
+  const pedido = await Pedido.create(req.body);
+  res.json(pedido);
+});
+
+app.get("/admin/pedidos", auth, async (req,res)=>{
+  res.json(await Pedido.find());
+});
+
+app.put("/admin/pedido/:id", auth, async (req,res)=>{
+  const p = await Pedido.findByIdAndUpdate(req.params.id,req.body,{new:true});
+  res.json(p);
+});
+
 /* ================= START ================= */
 app.listen(process.env.PORT || 3000, ()=>{
-  console.log("🚀 versão profissional 3 rodando");
+  console.log("🚀 versão profissional 4 rodando");
 });
