@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin</title>
+<title>Admin Max</title>
 </head>
 
 <body>
@@ -13,12 +13,14 @@
 
 <hr>
 
-<h2>Produto</h2>
+<h2>Produtos</h2>
 <input id="n">
 <input id="pr">
 <input id="i">
 <input id="c">
 <button onclick="add()">Criar</button>
+
+<div id="list"></div>
 
 <hr>
 
@@ -27,8 +29,19 @@
 
 <script>
 
+let token="";
+
 function login(){
-alert("login simples (sem token nesta versão)");
+fetch("/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:u.value,password:p.value})
+})
+.then(r=>r.json())
+.then(d=>{
+token=d.token;
+load();
+});
 }
 
 function add(){
@@ -41,32 +54,50 @@ preco:pr.value,
 img:i.value,
 categoria:c.value
 })
-}).then(()=>alert("criado"));
+})
+.then(()=>load());
 }
+
+function load(){
+fetch("/produtos")
+.then(r=>r.json())
+.then(d=>{
+list.innerHTML="";
+d.forEach(p=>{
+list.innerHTML+=`
+<div>
+${p.nome} - R$${p.preco}
+<button onclick="del('${p._id}')">Excluir</button>
+</div>`;
+});
+});
 
 fetch("/admin/pedidos")
 .then(r=>r.json())
 .then(d=>{
 pedidos.innerHTML="";
-
 d.forEach(p=>{
 pedidos.innerHTML+=`
 <div>
-<p>Total: ${p.total}</p>
-<p>Status: ${p.status}</p>
-
-<button onclick="status('${p._id}','enviado')">Enviar</button>
-<button onclick="status('${p._id}','entregue')">Entregue</button>
+Total: ${p.total}
+Status: ${p.status}
+<button onclick="st('${p._id}','enviado')">Enviar</button>
+<button onclick="st('${p._id}','entregue')">Entregue</button>
 </div>`;
 });
 });
+}
 
-function status(id,s){
+function del(id){
+fetch("/admin/produto/"+id,{method:"DELETE"}).then(()=>load());
+}
+
+function st(id,s){
 fetch("/admin/pedido/"+id,{
 method:"PUT",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({status:s})
-}).then(()=>location.reload());
+}).then(()=>load());
 }
 
 </script>

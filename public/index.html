@@ -1,25 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Loja Pro</title>
+<title>Shopee Max</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#f5f5f5;
-}
+body{margin:0;font-family:Arial;background:#f5f5f5}
 
-/* HEADER */
 header{
 background:#ee4d2d;
 color:#fff;
-padding:12px;
+padding:15px;
 text-align:center;
 font-size:18px;
 }
 
-/* SEARCH */
 .search{
 padding:10px;
 background:#fff;
@@ -30,10 +24,8 @@ width:100%;
 padding:10px;
 border-radius:8px;
 border:1px solid #ddd;
-outline:none;
 }
 
-/* CATEGORIES */
 .tabs{
 display:flex;
 gap:10px;
@@ -50,7 +42,6 @@ cursor:pointer;
 white-space:nowrap;
 }
 
-/* GRID */
 .grid{
 display:grid;
 grid-template-columns:repeat(2,1fr);
@@ -78,11 +69,8 @@ border:none;
 padding:8px;
 border-radius:6px;
 width:100%;
-cursor:pointer;
-margin-top:5px;
 }
 
-/* CART */
 .cart{
 background:#fff;
 margin:10px;
@@ -93,17 +81,14 @@ border-radius:10px;
 .item{
 display:flex;
 justify-content:space-between;
-align-items:center;
-margin:8px 0;
+margin:6px 0;
 }
 
-.smallbtn{
+.small{
 background:#ddd;
-color:#000;
 border:none;
-padding:4px 8px;
+padding:4px 6px;
 border-radius:5px;
-cursor:pointer;
 }
 
 .total{
@@ -116,43 +101,40 @@ margin-top:10px;
 
 <body>
 
-<header>🛒 Minha Loja PRO</header>
+<header>🛒 SHOPEE MAX LOJA</header>
 
-<!-- SEARCH -->
 <div class="search">
-<input id="busca" placeholder="Buscar produtos..." onkeyup="search()">
+<input id="busca" placeholder="Buscar..." onkeyup="search()">
 </div>
 
-<!-- CATEGORIES -->
 <div class="tabs" id="tabs"></div>
 
-<!-- PRODUCTS -->
 <div class="grid" id="produtos"></div>
 
-<!-- CART -->
 <div class="cart">
 <h3>Carrinho</h3>
 <div id="cart"></div>
-<div class="total" id="total">Total: R$ 0</div>
-<button onclick="finalizar()">Finalizar no WhatsApp</button>
+<div class="total" id="total"></div>
+<button onclick="finalizar()">Finalizar WhatsApp</button>
 </div>
 
 <script>
 
-let produtos = [];
-let carrinho = [];
+let produtos=[];
+let carrinho=JSON.parse(localStorage.getItem("cart"))||[];
 
 fetch("/produtos")
 .then(r=>r.json())
 .then(d=>{
-produtos = d;
+produtos=d;
 render(d);
-renderTabs(d);
+tabs(d);
+cart();
 });
 
-/* PRODUCTS */
+/* PRODUTOS */
 function render(data){
-const div=document.getElementById("produtos");
+let div=document.getElementById("produtos");
 div.innerHTML="";
 
 data.forEach(p=>{
@@ -161,103 +143,92 @@ div.innerHTML+=`
 <img src="${p.img}">
 <h3>${p.nome}</h3>
 <p>R$ ${p.preco}</p>
-
 <button onclick="add('${p.nome}',${p.preco})">Comprar</button>
-
 </div>`;
 });
 }
 
 /* SEARCH */
 function search(){
-let t=document.getElementById("busca").value.toLowerCase();
-
+let t=busca.value.toLowerCase();
 render(produtos.filter(p=>p.nome.toLowerCase().includes(t)));
 }
 
 /* CATEGORIES */
-function renderTabs(data){
-const cats=[...new Set(data.filter(p=>p.categoria).map(p=>p.categoria))];
+function tabs(data){
+let c=[...new Set(data.filter(p=>p.categoria).map(p=>p.categoria))];
 
-document.getElementById("tabs").innerHTML=
+tabs.innerHTML=
 `<div class="tab" onclick="render(produtos)">Todos</div>`+
-cats.map(c=>`
-<div class="tab" onclick="filter('${c}')">${c}</div>
-`).join("");
+c.map(x=>`<div class="tab" onclick="filtrar('${x}')">${x}</div>`).join("");
 }
 
-function filter(cat){
-render(produtos.filter(p=>p.categoria===cat));
+function filtrar(c){
+render(produtos.filter(p=>p.categoria===c));
 }
 
 /* CART */
-function add(nome,preco){
-let item=carrinho.find(i=>i.nome===nome);
-
-if(item) item.qtd++;
-else carrinho.push({nome,preco,qtd:1});
-
-renderCart();
+function add(n,p){
+let i=carrinho.find(x=>x.nome===n);
+if(i)i.qtd++;
+else carrinho.push({nome:n,preco:p,qtd:1});
+save();cart();
 }
 
-function renderCart(){
-let div=document.getElementById("cart");
-div.innerHTML="";
-
-let total=0;
+function cart(){
+let d=document.getElementById("cart");
+d.innerHTML="";
+let t=0;
 
 carrinho.forEach(i=>{
-div.innerHTML+=`
+d.innerHTML+=`
 <div class="item">
-<span>${i.nome} x${i.qtd}</span>
-
+${i.nome} x${i.qtd}
 <div>
-<button class="smallbtn" onclick="menos('${i.nome}')">-</button>
-<button class="smallbtn" onclick="mais('${i.nome}')">+</button>
-<button class="smallbtn" onclick="remover('${i.nome}')">x</button>
+<button class="small" onclick="m('${i.nome}')">-</button>
+<button class="small" onclick="p('${i.nome}')">+</button>
+<button class="small" onclick="r('${i.nome}')">x</button>
 </div>
-
 </div>`;
-
-total+=i.preco*i.qtd;
+t+=i.preco*i.qtd;
 });
 
-document.getElementById("total").innerText="Total: R$ "+total;
+total.innerText="Total: R$ "+t;
+save();
 }
 
-function mais(nome){
-let i=carrinho.find(i=>i.nome===nome);
-i.qtd++;
-renderCart();
-}
-
-function menos(nome){
-let i=carrinho.find(i=>i.nome===nome);
+function m(n){
+let i=carrinho.find(x=>x.nome===n);
 i.qtd--;
-
-if(i.qtd<=0){
-carrinho=carrinho.filter(p=>p.nome!==nome);
+if(i.qtd<=0)carrinho=carrinho.filter(x=>x.nome!==n);
+cart();
 }
 
-renderCart();
+function p(n){
+carrinho.find(x=>x.nome===n).qtd++;
+cart();
 }
 
-function remover(nome){
-carrinho=carrinho.filter(p=>p.nome!==nome);
-renderCart();
+function r(n){
+carrinho=carrinho.filter(x=>x.nome!==n);
+cart();
 }
 
-/* FINALIZAR */
+function save(){
+localStorage.setItem("cart",JSON.stringify(carrinho));
+}
+
+/* FINAL */
 function finalizar(){
 let msg="Pedido:%0A";
-let total=0;
+let t=0;
 
 carrinho.forEach(i=>{
 msg+=`${i.nome} x${i.qtd}%0A`;
-total+=i.preco*i.qtd;
+t+=i.preco*i.qtd;
 });
 
-msg+=`%0ATotal: R$ ${total}`;
+msg+=`%0ATotal: R$ ${t}`;
 
 window.open("https://wa.me/5599999999999?text="+msg);
 }
