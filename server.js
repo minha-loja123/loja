@@ -13,8 +13,8 @@ app.use(express.static(__dirname + "/public"));
 
 /* ================= MONGO ================= */
 mongoose.connect(process.env.MONGO_URL)
-.then(()=>console.log("🟢 MongoDB OK"))
-.catch(err=>console.log("🔴 MongoDB erro",err));
+.then(()=>console.log("🟢 MongoDB conectado"))
+.catch(err=>console.log("🔴 erro MongoDB",err));
 
 /* ================= MODELOS ================= */
 const Produto = mongoose.model("Produto", {
@@ -105,5 +105,5 @@ app.delete("/admin/produto/:id", auth, async (req,res)=>{
 
 /* ================= START ================= */
 app.listen(process.env.PORT || 3000, ()=>{
-  console.log("🚀 rodando versão profissional 2");
+  console.log("🚀 versão profissional 3 rodando");
 });
