@@ -1,28 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin</title>
+<title>Admin Shopee</title>
 </head>
 
 <body>
 
 <h2>Login</h2>
 <input id="u">
-<input id="p" type="password">
+<input id="p">
 <button onclick="login()">Entrar</button>
 
 <hr>
 
-<h2>Produto</h2>
-
-<input id="n">
-<input id="pr">
-<input id="i">
-<input id="c">
-
-<button onclick="add()">Criar</button>
-
-<div id="list"></div>
+<h2>Pedidos</h2>
+<div id="pedidos"></div>
 
 <script>
 
@@ -37,39 +29,44 @@ body:JSON.stringify({username:u.value,password:p.value})
 .then(r=>r.json())
 .then(d=>{
 token=d.token;
-load();
+loadPedidos();
 });
 }
 
-function add(){
-fetch("/admin/produto",{
-method:"POST",
+function loadPedidos(){
+fetch("/admin/pedidos",{headers:{Authorization:token}})
+.then(r=>r.json())
+.then(d=>{
+pedidos.innerHTML="";
+
+d.forEach(p=>{
+pedidos.innerHTML+=`
+<div>
+<p>Total: ${p.total}</p>
+<p>Status: ${p.status}</p>
+
+<button onclick="update('${p._id}','pendente')">Pendente</button>
+<button onclick="update('${p._id}','enviado')">Enviado</button>
+<button onclick="update('${p._id}','entregue')">Entregue</button>
+
+<hr>
+</div>
+`;
+});
+});
+}
+
+function update(id,status){
+fetch("/admin/pedido/"+id,{
+method:"PUT",
 headers:{
 "Content-Type":"application/json",
 "Authorization":token
 },
-body:JSON.stringify({
-nome:n.value,
-preco:pr.value,
-img:i.value,
-categoria:c.value
+body:JSON.stringify({status})
 })
-})
-.then(()=>load());
+.then(()=>loadPedidos());
 }
-
-function load(){
-fetch("/produtos")
-.then(r=>r.json())
-.then(d=>{
-list.innerHTML="";
-d.forEach(p=>{
-list.innerHTML+=`<p>${p.nome}</p>`;
-});
-});
-}
-
-load();
 
 </script>
 

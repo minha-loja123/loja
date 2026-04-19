@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Loja Real</title>
+<title>Loja Shopee Real</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f4f4}
+body{font-family:Arial;background:#f5f5f5;margin:0}
 
 header{background:#ee4d2d;color:#fff;padding:15px;text-align:center}
 
@@ -12,11 +12,11 @@ header{background:#ee4d2d;color:#fff;padding:15px;text-align:center}
 
 .container{max-width:1100px;margin:auto;padding:15px}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 
 .card{background:#fff;padding:10px;border-radius:10px;text-align:center}
 
-.card img{width:100%;height:180px;object-fit:contain}
+.card img{width:100%;height:160px;object-fit:contain}
 
 button{padding:8px;border:none;border-radius:6px;cursor:pointer}
 
@@ -29,7 +29,7 @@ button{padding:8px;border:none;border-radius:6px;cursor:pointer}
 
 <body>
 
-<header>MINHA LOJA REAL</header>
+<header>SHOPEE REAL MINI</header>
 
 <div class="banner">
 <img src="/img/banner.jpg">
@@ -44,8 +44,8 @@ button{padding:8px;border:none;border-radius:6px;cursor:pointer}
 
 <h3 id="total">Total: 0</h3>
 
-<button onclick="checkout()" style="width:100%;background:green;color:#fff;padding:10px">
-Finalizar no WhatsApp
+<button onclick="finalizar()" style="width:100%;background:green;color:#fff;padding:10px">
+Finalizar WhatsApp
 </button>
 
 </div>
@@ -53,21 +53,19 @@ Finalizar no WhatsApp
 <script>
 
 let carrinho = JSON.parse(localStorage.getItem("cart")) || [];
-let produtos = [];
 
 fetch("/produtos")
 .then(r=>r.json())
 .then(d=>{
-produtos = d;
 render(d);
 });
 
 function render(data){
-const div = document.getElementById("produtos");
+const div=document.getElementById("produtos");
 div.innerHTML="";
 
 data.forEach(p=>{
-div.innerHTML += `
+div.innerHTML+=`
 <div class="card">
 <img src="${p.img}">
 <h3>${p.nome}</h3>
@@ -78,7 +76,7 @@ div.innerHTML += `
 }
 
 function add(nome,preco){
-let item = carrinho.find(i=>i.nome===nome);
+let item=carrinho.find(i=>i.nome===nome);
 
 if(item) item.qtd++;
 else carrinho.push({nome,preco,qtd:1});
@@ -105,7 +103,7 @@ function save(){
 localStorage.setItem("cart",JSON.stringify(carrinho));
 }
 
-function checkout(){
+function finalizar(){
 let msg="Pedido:%0A";
 let total=0;
 
@@ -116,7 +114,7 @@ total+=i.preco*i.qtd;
 
 msg+=`%0ATotal: ${total}`;
 
-window.open("https://wa.me/SEUNUMERO?text="+msg);
+window.open("https://wa.me/5599999999999?text="+msg);
 }
 
 renderCart();
