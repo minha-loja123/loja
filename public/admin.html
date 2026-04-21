@@ -1,104 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Max</title>
+<title>Admin</title>
+
+<style>
+body{font-family:Arial;background:#f2f2f2;padding:20px}
+
+input{
+padding:8px;
+margin:5px;
+}
+
+button{
+padding:8px;
+background:#ee4d2d;
+color:#fff;
+border:none;
+cursor:pointer;
+}
+
+.item{
+background:#fff;
+padding:10px;
+margin:10px 0;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-radius:8px;
+}
+
+.excluir{
+background:red;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Login</h2>
-<input id="u">
-<input id="p">
-<button onclick="login()">Entrar</button>
+<h2>Admin - Produtos</h2>
+
+<input id="nome" placeholder="Nome">
+<input id="preco" placeholder="Preço">
+<input id="img" placeholder="Imagem (ex: /img/pod.jpg)">
+
+<button onclick="criar()">Criar Produto</button>
 
 <hr>
 
-<h2>Produtos</h2>
-<input id="n">
-<input id="pr">
-<input id="i">
-<input id="c">
-<button onclick="add()">Criar</button>
-
-<div id="list"></div>
-
-<hr>
-
-<h2>Pedidos</h2>
-<div id="pedidos"></div>
+<div id="lista"></div>
 
 <script>
 
-let token="";
-
-function login(){
-fetch("/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:u.value,password:p.value})
-})
+/* LISTAR */
+function carregar(){
+fetch("/produtos")
 .then(r=>r.json())
-.then(d=>{
-token=d.token;
-load();
+.then(produtos=>{
+
+const div=document.getElementById("lista");
+div.innerHTML="";
+
+produtos.forEach(p=>{
+
+const item=document.createElement("div");
+item.className="item";
+
+const info=document.createElement("span");
+info.innerText = p.nome + " - R$ " + p.preco;
+
+const btn=document.createElement("button");
+btn.innerText="Excluir";
+btn.className="excluir";
+
+btn.onclick = () => deletar(p._id);
+
+item.appendChild(info);
+item.appendChild(btn);
+
+div.appendChild(item);
+
+});
+
 });
 }
 
-function add(){
-fetch("/admin/produto",{
+/* CRIAR */
+function criar(){
+fetch("/produtos",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-nome:n.value,
-preco:pr.value,
-img:i.value,
-categoria:c.value
+nome:document.getElementById("nome").value,
+preco:Number(document.getElementById("preco").value),
+img:document.getElementById("img").value
 })
 })
-.then(()=>load());
+.then(()=>carregar());
 }
 
-function load(){
-fetch("/produtos")
-.then(r=>r.json())
-.then(d=>{
-list.innerHTML="";
-d.forEach(p=>{
-list.innerHTML+=`
-<div>
-${p.nome} - R$${p.preco}
-<button onclick="del('${p._id}')">Excluir</button>
-</div>`;
-});
+/* DELETAR */
+function deletar(id){
+
+if(!confirm("Excluir produto?")) return;
+
+fetch("/produtos/"+id,{
+method:"DELETE"
+})
+.then(res=>res.json())
+.then(data=>{
+console.log(data);
+alert(data.mensagem || "Erro");
+carregar();
+})
+.catch(err=>{
+console.error(err);
+alert("Erro ao deletar");
 });
 
-fetch("/admin/pedidos")
-.then(r=>r.json())
-.then(d=>{
-pedidos.innerHTML="";
-d.forEach(p=>{
-pedidos.innerHTML+=`
-<div>
-Total: ${p.total}
-Status: ${p.status}
-<button onclick="st('${p._id}','enviado')">Enviar</button>
-<button onclick="st('${p._id}','entregue')">Entregue</button>
-</div>`;
-});
-});
 }
 
-function del(id){
-fetch("/admin/produto/"+id,{method:"DELETE"}).then(()=>load());
-}
-
-function st(id,s){
-fetch("/admin/pedido/"+id,{
-method:"PUT",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({status:s})
-}).then(()=>load());
-}
+/* INIT */
+carregar();
 
 </script>
 

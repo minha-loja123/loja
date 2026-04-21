@@ -1,0 +1,19 @@
+<h2>Meus pedidos</h2>
+<div id="pedidos"></div>
+
+<script>
+let token=localStorage.getItem("token");
+
+fetch("/meus-pedidos",{headers:{Authorization:token}})
+.then(r=>r.json())
+.then(d=>{
+pedidos.innerHTML="";
+d.forEach(p=>{
+pedidos.innerHTML+=`
+<div>
+Total: ${p.total}
+Status: ${p.status}
+</div>`;
+});
+});
+</script>
