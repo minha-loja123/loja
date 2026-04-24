@@ -5,73 +5,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f5f5}
+body{
+margin:0;
+font-family:Arial;
+background:#0f0f14;
+color:#fff;
+}
 
+/* HEADER */
 header{
-background:#fff;
+background:#1a1a22;
 padding:15px;
 text-align:center;
 font-weight:bold;
-border-bottom:1px solid #ddd;
+position:sticky;
+top:0;
+z-index:10;
 }
 
+/* CARRINHO CONTADOR */
+.carrinho-topo{
+position:absolute;
+right:15px;
+top:15px;
+background:#ff3c00;
+padding:5px 10px;
+border-radius:20px;
+font-size:12px;
+}
+
+/* BUSCA */
 #busca{
 width:90%;
 margin:10px auto;
 display:block;
-padding:10px;
+padding:12px;
 border-radius:20px;
-border:1px solid #ccc;
+border:none;
+background:#1e1e28;
+color:#fff;
+}
+
+/* GRID */
+#lista{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+padding:10px;
 }
 
 .produto{
-display:flex;
-background:#fff;
-margin:10px;
+background:#1a1a22;
+border-radius:12px;
 padding:10px;
-border-radius:10px;
-align-items:center;
+transition:0.2s;
 }
+.produto:hover{transform:scale(1.02)}
 
 .produto img{
-width:70px;
-margin-right:10px;
+width:100%;
+height:120px;
+object-fit:contain;
 }
 
-.info{flex:1}
+/* INFO */
+.nome{font-size:13px;font-weight:bold}
+.preco{color:#ff3c00;font-weight:bold}
+.vendidos{font-size:11px;color:#aaa}
 
+/* ESTRELAS */
+.estrelas{color:gold;font-size:12px}
+
+/* BOTÃO */
 .botao{
-background:#ee4d2d;
-color:#fff;
+background:linear-gradient(90deg,#ff3c00,#ff7b00);
 border:none;
-padding:8px 12px;
+color:#fff;
+padding:8px;
 border-radius:20px;
-cursor:pointer;
+width:100%;
 margin-top:5px;
+}
+
+/* POPUP */
+#popup{
+position:fixed;
+bottom:20px;
+left:20px;
+background:#1a1a22;
+padding:10px;
+border-radius:10px;
+display:none;
+font-size:12px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🔥 Vape Store SP</header>
+<header>
+🔥 Vape Store SP
+<span class="carrinho-topo" onclick="irCarrinho()">
+🛒 <span id="count">0</span>
+</span>
+</header>
 
 <input id="busca" placeholder="Buscar..." onkeyup="filtrar()">
 
-<a href="/checkout.html">
-<button style="margin:10px;width:90%;padding:12px;background:#ee4d2d;color:#fff;border:none;border-radius:25px">
-🛒 Ir para Carrinho
-</button>
-</a>
-
 <div id="lista"></div>
+
+<div id="popup"></div>
 
 <script>
 
 let produtosGlobal = [];
 let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
-/* CARREGAR PRODUTOS */
+atualizarContador();
+
 fetch("/produtos")
 .then(r=>r.json())
 .then(data=>{
@@ -79,49 +130,60 @@ produtosGlobal = data;
 mostrar(data);
 });
 
-/* CRIAR PRODUTO */
 function criarProduto(p){
+
+const vendidos = Math.floor(Math.random()*300)+50;
+const estrelas = "★★★★★";
 
 const item = document.createElement("div");
 item.className="produto";
 
 item.innerHTML = `
 <img src="${p.img}">
-
-<div class="info">
-<b>${p.nome}</b><br>
-R$ ${p.preco}<br>
-
-<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>
-Adicionar
-</button>
-
-</div>
+<div class="nome">${p.nome}</div>
+<div class="estrelas">${estrelas}</div>
+<div class="vendidos">${vendidos} vendidos</div>
+<div class="preco">R$ ${p.preco}</div>
+<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar</button>
 `;
 
 document.getElementById("lista").appendChild(item);
 }
 
-/* MOSTRAR */
 function mostrar(lista){
 document.getElementById("lista").innerHTML="";
 lista.forEach(p=>criarProduto(p));
 }
 
-/* BUSCA */
 function filtrar(){
 const termo = document.getElementById("busca").value.toLowerCase();
-const filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes(termo)
-);
-mostrar(filtrados);
+mostrar(produtosGlobal.filter(p=>p.nome.toLowerCase().includes(termo)));
 }
 
-/* CARRINHO */
 function addCarrinho(p){
 carrinho.push(p);
 localStorage.setItem("carrinho", JSON.stringify(carrinho));
-alert("Produto adicionado");
+atualizarContador();
+mostrarPopup(p.nome);
+}
+
+function atualizarContador(){
+document.getElementById("count").innerText = carrinho.length;
+}
+
+function irCarrinho(){
+window.location.href="/checkout.html";
+}
+
+/* POPUP FAKE */
+function mostrarPopup(nome){
+const popup = document.getElementById("popup");
+popup.innerText = "🔥 Alguém comprou: " + nome;
+popup.style.display = "block";
+
+setTimeout(()=>{
+popup.style.display = "none";
+},3000);
 }
 
 </script>
