@@ -7,122 +7,48 @@
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
 
-/* TOPO */
 header{
 background:#fff;
 padding:15px;
 text-align:center;
 font-weight:bold;
-font-size:18px;
 border-bottom:1px solid #ddd;
-position:sticky;
-top:0;
-z-index:10;
 }
 
-/* BANNER */
-.banner{
-background:#ee4d2d;
-color:#fff;
-text-align:center;
-padding:10px;
-font-size:14px;
-font-weight:bold;
-}
-
-/* BUSCA */
 #busca{
 width:90%;
 margin:10px auto;
 display:block;
-padding:12px;
-border-radius:25px;
+padding:10px;
+border-radius:20px;
 border:1px solid #ccc;
 }
 
-/* MENU */
-#menu{
-display:flex;
-gap:10px;
-padding:10px;
-overflow:auto;
-}
-#menu button{
-border:none;
-padding:8px 14px;
-border-radius:20px;
-background:#eee;
-cursor:pointer;
-font-weight:bold;
-}
-#menu button:hover{
-background:#ee4d2d;
-color:#fff;
-}
-
-/* PRODUTO */
 .produto{
 display:flex;
-align-items:center;
 background:#fff;
 margin:10px;
-padding:12px;
-border-radius:12px;
-box-shadow:0 2px 6px rgba(0,0,0,0.05);
+padding:10px;
+border-radius:10px;
+align-items:center;
 }
 
 .produto img{
-width:75px;height:75px;object-fit:contain;margin-right:10px;cursor:pointer;
+width:70px;
+margin-right:10px;
 }
 
 .info{flex:1}
 
-.nome{font-size:14px;font-weight:bold}
-
-.preco{color:#ee4d2d;font-weight:bold;font-size:16px;margin-top:5px}
-
-/* PROVA SOCIAL */
-.social{
-font-size:11px;
-color:#888;
-margin-top:3px;
-}
-
-/* BOTÃO */
 .botao{
-background:#25D366;
+background:#ee4d2d;
+color:#fff;
 border:none;
-color:#fff;
-padding:10px 16px;
-border-radius:25px;
-font-size:13px;
-font-weight:bold;
+padding:8px 12px;
+border-radius:20px;
 cursor:pointer;
+margin-top:5px;
 }
-
-/* WHATS FIXO */
-.whats-fixo{
-position:fixed;
-bottom:20px;
-right:20px;
-background:#25D366;
-color:#fff;
-padding:16px;
-border-radius:50%;
-font-size:20px;
-text-decoration:none;
-}
-
-/* MODAL */
-#modal{
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.8);
-display:none;
-align-items:center;
-justify-content:center;
-}
-#modal img{max-width:90%;max-height:90%}
 </style>
 </head>
 
@@ -130,32 +56,22 @@ justify-content:center;
 
 <header>🔥 Vape Store SP</header>
 
-<div class="banner">
-⚡ PROMOÇÃO HOJE - ENTREGA RÁPIDA 🚚
-</div>
+<input id="busca" placeholder="Buscar..." onkeyup="filtrar()">
 
-<input id="busca" placeholder="Buscar produtos..." onkeyup="filtrar()">
-
-<div id="menu">
-<button onclick="filtrarCategoria('todos')">Todos</button>
-<button onclick="filtrarCategoria('pods')">Pods</button>
-<button onclick="filtrarCategoria('essencias')">Essências</button>
-<button onclick="filtrarCategoria('acessorios')">Acessórios</button>
-</div>
+<a href="/checkout.html">
+<button style="margin:10px;width:90%;padding:12px;background:#ee4d2d;color:#fff;border:none;border-radius:25px">
+🛒 Ir para Carrinho
+</button>
+</a>
 
 <div id="lista"></div>
-
-<a class="whats-fixo" href="https://wa.me/55SEUNUMERO" target="_blank">💬</a>
-
-<div id="modal" onclick="fecharModal()">
-<img id="imgModal">
-</div>
 
 <script>
 
 let produtosGlobal = [];
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
-/* CARREGAR */
+/* CARREGAR PRODUTOS */
 fetch("/produtos")
 .then(r=>r.json())
 .then(data=>{
@@ -169,59 +85,27 @@ function criarProduto(p){
 const item = document.createElement("div");
 item.className="produto";
 
-/* PROVA SOCIAL FAKE */
-const vendidos = Math.floor(Math.random()*50)+10;
-
-const msg = encodeURIComponent(
-`🔥 Promoção do dia!
-
-Quero esse produto:
-${p.nome}
-
-💰 Preço: R$ ${p.preco}
-
-Tem pronta entrega?`
-);
-
 item.innerHTML = `
-<img src="${p.img}" onclick="abrirImagem('${p.img}')">
+<img src="${p.img}">
 
 <div class="info">
-<div class="nome">${p.nome}</div>
-<div class="social">🔥 ${vendidos} vendidos hoje</div>
-<div class="preco">R$ ${p.preco}</div>
-</div>
+<b>${p.nome}</b><br>
+R$ ${p.preco}<br>
 
-<a href="https://wa.me/5511990066190?text=${msg}" target="_blank">
-<button class="botao">Comprar</button>
-</a>
+<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>
+Adicionar
+</button>
+
+</div>
 `;
 
 document.getElementById("lista").appendChild(item);
 }
 
 /* MOSTRAR */
-function mostrar(produtos){
-
-const lista = document.getElementById("lista");
-lista.innerHTML="";
-
-/* DESTACAR PRIMEIRO PRODUTO */
-if(produtos.length > 0){
-const destaque = document.createElement("div");
-destaque.innerHTML = "🔥 MAIS PROCURADO HOJE";
-destaque.style.margin="10px";
-destaque.style.fontWeight="bold";
-lista.appendChild(destaque);
-
-criarProduto(produtos[0]);
-}
-
-/* RESTANTE */
-produtos.slice(1).forEach(p=>{
-criarProduto(p);
-});
-
+function mostrar(lista){
+document.getElementById("lista").innerHTML="";
+lista.forEach(p=>criarProduto(p));
 }
 
 /* BUSCA */
@@ -233,46 +117,11 @@ p.nome.toLowerCase().includes(termo)
 mostrar(filtrados);
 }
 
-/* CATEGORIA */
-function filtrarCategoria(tipo){
-
-let filtrados = [];
-
-if(tipo==="todos") filtrados = produtosGlobal;
-
-if(tipo==="pods"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("k") ||
-p.nome.toLowerCase().includes("elf") ||
-p.nome.toLowerCase().includes("ignite") ||
-p.nome.toLowerCase().includes("oxbar") ||
-p.nome.toLowerCase().includes("lost") ||
-p.nome.toLowerCase().includes("nikbar")
-);
-}
-
-if(tipo==="essencias"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("essencia")
-);
-}
-
-if(tipo==="acessorios"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("coil")
-);
-}
-
-mostrar(filtrados);
-}
-
-/* MODAL */
-function abrirImagem(src){
-document.getElementById("imgModal").src = src;
-document.getElementById("modal").style.display="flex";
-}
-function fecharModal(){
-document.getElementById("modal").style.display="none";
+/* CARRINHO */
+function addCarrinho(p){
+carrinho.push(p);
+localStorage.setItem("carrinho", JSON.stringify(carrinho));
+alert("Produto adicionado");
 }
 
 </script>

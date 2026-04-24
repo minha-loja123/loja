@@ -1,76 +1,72 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 
+/* PORTA */
+const PORT = process.env.PORT || 3000;
+
+/* MIDDLEWARE */
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
-/* =========================
-   CONEXÃO MONGODB
-========================= */
-mongoose.connect(process.env.MONGO_URL)
-.then(() => console.log("🟢 MongoDB conectado"))
-.catch(err => console.log("🔴 erro MongoDB", err));
+/* CONEXÃO MONGODB */
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("🟢 MongoDB conectado");
+  })
+  .catch((err) => {
+    console.log("❌ Erro MongoDB:", err);
+  });
 
-/* =========================
-   MODEL
-========================= */
+/* MODEL */
 const Produto = mongoose.model("Produto", {
   nome: String,
   preco: Number,
   img: String
 });
 
-/* =========================
-   ROTAS
-========================= */
+/* ROTAS */
 
-/* LISTAR */
+// listar produtos
 app.get("/produtos", async (req, res) => {
-  const produtos = await Produto.find();
-  res.json(produtos);
+  try {
+    const produtos = await Produto.find();
+    res.json(produtos);
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao buscar produtos" });
+  }
 });
 
-/* CRIAR */
+// criar produto
 app.post("/produtos", async (req, res) => {
   try {
-    const novo = await Produto.create(req.body);
+    const novo = new Produto(req.body);
+    await novo.save();
     res.json(novo);
   } catch (err) {
-    res.status(500).json({ erro: "Erro ao criar" });
+    res.status(500).json({ erro: "Erro ao criar produto" });
   }
 });
 
-/* 🔥 DELETAR (AGORA FUNCIONA) */
+// deletar produto
 app.delete("/produtos/:id", async (req, res) => {
-  console.log("🔥 DELETE CHAMADO:", req.params.id);
-
   try {
-    const deletado = await Produto.findByIdAndDelete(req.params.id);
-
-    if (!deletado) {
-      return res.status(404).json({ erro: "Produto não encontrado" });
-    }
-
-    res.json({ mensagem: "Produto removido com sucesso" });
-
+    await Produto.findByIdAndDelete(req.params.id);
+    res.sendStatus(200);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ erro: "Erro ao deletar" });
+    res.status(500).json({ erro: "Erro ao deletar produto" });
   }
 });
 
-/* PEDIDO */
-app.post("/pedido", (req, res) => {
-  console.log("🧾 Pedido:", req.body);
-  res.json({ mensagem: "Pedido recebido" });
+/* SERVIR SITE */
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* =========================
-   START
-========================= */
-app.listen(3000, () => {
-  console.log("🚀 servidor rodando em http://localhost:3000");
+/* START */
+app.listen(PORT, () => {
+  console.log("🚀 rodando na porta " + PORT);
 });

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Checkout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{font-family:Arial;background:#f5f5f5;padding:10px}
+.card{background:#fff;padding:15px;border-radius:10px;margin-bottom:10px}
+.total{font-size:18px;font-weight:bold;color:#ee4d2d}
+button{width:100%;padding:12px;background:#ee4d2d;color:#fff;border:none;border-radius:25px;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<h2>🛒 Finalizar Compra</h2>
+
+<div id="lista"></div>
+
+<div class="card">
+<div class="total" id="total"></div>
+</div>
+
+<button onclick="pagar()">Pagar agora</button>
+
+<script>
+
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+function render(){
+let html = "";
+let total = 0;
+
+carrinho.forEach(p=>{
+html += `<div class="card">${p.nome} - R$ ${p.preco}</div>`;
+total += p.preco;
+});
+
+document.getElementById("lista").innerHTML = html;
+document.getElementById("total").innerText = "Total: R$ " + total;
+}
+
+function pagar(){
+window.location.href = "https://dentpeg.com/checkout/vape-store";
+}
+
+render();
+
+</script>
+
+</body>
+</html>
