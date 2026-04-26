@@ -3,140 +3,25 @@
 <head>
 <title>Vape Store SP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Loja de pods, essências e acessórios com entrega rápida.">
 
 <style>
 body{margin:0;font-family:Arial;background:#f5f5f5}
+header{background:#fff;padding:15px;text-align:center;font-weight:bold;border-bottom:1px solid #ddd;position:sticky;top:0}
+.carrinho{position:absolute;right:15px;top:15px;background:#00a650;color:#fff;padding:5px 10px;border-radius:20px;cursor:pointer}
 
-/* HEADER */
-header{
-background:#fff;
-padding:15px;
-text-align:center;
-font-weight:bold;
-position:sticky;
-top:0;
-z-index:10;
-border-bottom:1px solid #ddd;
-}
+.hero{background:linear-gradient(120deg,#ff3c00,#ff7b00);color:#fff;padding:40px;text-align:center}
+.hero button{padding:10px 20px;border:none;border-radius:20px}
 
-.carrinho-topo{
-position:absolute;
-right:15px;
-top:15px;
-background:#00a650;
-color:#fff;
-padding:5px 10px;
-border-radius:20px;
-cursor:pointer;
-}
+.categorias{display:flex;justify-content:space-around;background:#fff;padding:10px}
+.categorias div{background:#eee;padding:10px;border-radius:10px;cursor:pointer}
 
-/* HERO */
-.hero{
-background:linear-gradient(120deg,#ff3c00,#ff7b00);
-color:#fff;
-padding:40px 20px;
-text-align:center;
-}
+#lista{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
 
-.hero h1{margin:0;font-size:22px}
-.hero p{font-size:13px;margin:10px 0}
+.produto{background:#fff;padding:10px;border-radius:10px}
+.produto img{width:100%;height:120px;object-fit:contain}
 
-.hero button{
-background:#fff;
-color:#ff3c00;
-border:none;
-padding:10px 20px;
-border-radius:20px;
-font-weight:bold;
-}
-
-/* CATEGORIAS */
-.categorias{
-display:flex;
-justify-content:space-around;
-padding:15px;
-background:#fff;
-}
-
-.categorias div{
-background:#f5f5f5;
-padding:10px;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-}
-
-/* BUSCA */
-#busca{
-width:90%;
-margin:10px auto;
-display:block;
-padding:12px;
-border-radius:8px;
-border:1px solid #ccc;
-}
-
-/* GRID */
-#lista{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:12px;
-padding:10px;
-}
-
-/* PRODUTO */
-.produto{
-background:#fff;
-border-radius:12px;
-padding:10px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-transition:0.2s;
-}
-.produto:hover{transform:scale(1.02)}
-
-.produto img{
-width:100%;
-height:130px;
-object-fit:contain;
-}
-
-.nome{font-size:14px;font-weight:bold}
-.preco{color:#e60023;font-weight:bold}
-.vendidos{font-size:12px;color:#777}
-
-/* BOTÃO */
-.botao{
-background:#00a650;
-color:#fff;
-border:none;
-padding:10px;
-border-radius:6px;
-width:100%;
-margin-top:5px;
-}
-
-/* INFO */
-.info{
-background:#fff;
-margin:10px;
-padding:15px;
-border-radius:10px;
-font-size:13px;
-color:#555;
-}
-
-/* POPUP */
-#popup{
-position:fixed;
-bottom:20px;
-left:20px;
-background:#fff;
-padding:10px;
-border-radius:10px;
-display:none;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
-font-size:12px;
-}
+.botao{background:#00a650;color:#fff;border:none;padding:10px;width:100%;margin-top:5px}
 </style>
 </head>
 
@@ -144,133 +29,57 @@ font-size:12px;
 
 <header>
 Vape Store SP
-<span class="carrinho-topo" onclick="irCarrinho()">🛒 <span id="count">0</span></span>
+<span class="carrinho" onclick="location.href='checkout.html'">🛒 <span id="count">0</span></span>
 </header>
 
 <div class="hero">
-<h1>🔥 Os Melhores Pods</h1>
-<p>Qualidade premium • Entrega rápida • Promoções</p>
-<button onclick="scrollProdutos()">Ver produtos</button>
+<h2>🔥 Loja Oficial de Pods</h2>
+<p>Entrega rápida | Compra segura</p>
+<button onclick="window.scrollTo(0,400)">Ver produtos</button>
 </div>
 
 <div class="categorias">
-<div onclick="filtrarCategoria('pods')">💨 Pods</div>
-<div onclick="filtrarCategoria('essencias')">🧪 Essências</div>
-<div onclick="filtrarCategoria('acessorios')">⚙️ Acessórios</div>
+<div onclick="filtro('pods')">Pods</div>
+<div onclick="filtro('essencias')">Essências</div>
+<div onclick="filtro('acessorios')">Acessórios</div>
 </div>
-
-<input id="busca" placeholder="Buscar produtos..." onkeyup="filtrar()">
 
 <div id="lista"></div>
 
-<div class="info">
-<b>Compra Segura</b><br>
-Ambiente protegido e suporte disponível.<br><br>
-
-<b>Entrega Rápida</b><br>
-Envio ágil com discrição.<br><br>
-
-<b>Qualidade Garantida</b><br>
-Produtos selecionados e bem avaliados.
-</div>
-
-<div id="popup"></div>
-
 <script>
+let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
+document.getElementById("count").innerText = carrinho.length;
 
-let produtosGlobal = [];
-let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+let produtos=[];
 
-atualizarContador();
-
-fetch("/produtos")
-.then(r=>r.json())
-.then(data=>{
-produtosGlobal = data;
-mostrar(data);
+fetch("/produtos").then(r=>r.json()).then(d=>{
+produtos=d;
+mostrar(d);
 });
-
-function criarProduto(p){
-
-const vendidos = Math.floor(Math.random()*200)+20;
-
-const item = document.createElement("div");
-item.className="produto";
-
-item.innerHTML = `
-<img src="${p.img}">
-<div class="nome">${p.nome}</div>
-<div class="vendidos">🔥 ${vendidos} vendidos</div>
-<div class="preco">R$ ${p.preco}</div>
-<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar</button>
-`;
-
-document.getElementById("lista").appendChild(item);
-}
 
 function mostrar(lista){
 document.getElementById("lista").innerHTML="";
-lista.forEach(p=>criarProduto(p));
+lista.forEach(p=>{
+document.getElementById("lista").innerHTML+=`
+<div class="produto">
+<img src="${p.img}">
+<b>${p.nome}</b>
+<div>R$ ${p.preco}</div>
+<button class="botao" onclick='verProduto(${JSON.stringify(p)})'>Ver</button>
+</div>`;
+});
 }
 
-function filtrar(){
-const termo = document.getElementById("busca").value.toLowerCase();
-mostrar(produtosGlobal.filter(p=>p.nome.toLowerCase().includes(termo)));
+function verProduto(p){
+localStorage.setItem("produtoAtual", JSON.stringify(p));
+location.href="produto.html";
 }
 
-function filtrarCategoria(tipo){
-
-let filtrados = [];
-
-if(tipo==="pods"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("k") ||
-p.nome.toLowerCase().includes("elf") ||
-p.nome.toLowerCase().includes("ignite")
-);
+function filtro(tipo){
+if(tipo=="pods"){
+mostrar(produtos.filter(p=>p.nome.toLowerCase().includes("k")||p.nome.toLowerCase().includes("elf")));
 }
-
-if(tipo==="essencias"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("essencia")
-);
 }
-
-if(tipo==="acessorios"){
-filtrados = produtosGlobal.filter(p =>
-p.nome.toLowerCase().includes("coil")
-);
-}
-
-mostrar(filtrados);
-}
-
-function addCarrinho(p){
-carrinho.push(p);
-localStorage.setItem("carrinho", JSON.stringify(carrinho));
-atualizarContador();
-mostrarPopup(p.nome);
-}
-
-function atualizarContador(){
-document.getElementById("count").innerText = carrinho.length;
-}
-
-function irCarrinho(){
-window.location.href="/checkout.html";
-}
-
-function scrollProdutos(){
-window.scrollTo({ top: 300, behavior: "smooth" });
-}
-
-function mostrarPopup(nome){
-const popup = document.getElementById("popup");
-popup.innerText = "🔥 Compra recente: " + nome;
-popup.style.display = "block";
-setTimeout(()=>popup.style.display="none",3000);
-}
-
 </script>
 
 </body>

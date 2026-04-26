@@ -1,66 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Carrinho</title>
+<title>Checkout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{background:#0f0f14;color:#fff;font-family:Arial;padding:10px}
-.card{background:#1a1a22;padding:10px;margin-bottom:10px;border-radius:10px}
-.total{color:#ff3c00;font-weight:bold;font-size:18px}
-button{width:100%;padding:12px;background:#ff3c00;color:#fff;border:none;border-radius:20px;margin-top:5px}
+body{font-family:Arial;background:#f5f5f5;padding:10px}
+.card{background:#fff;padding:10px;margin-bottom:10px;border-radius:10px}
+.total{font-weight:bold;color:red}
+button{width:100%;padding:12px;background:#ff3c00;color:#fff;border:none}
 </style>
 </head>
 
 <body>
 
-<button onclick="voltar()">⬅️ Voltar</button>
-
-<h2>🛒 Carrinho</h2>
-
+<h2>Seu Carrinho</h2>
 <div id="lista"></div>
 <div class="total" id="total"></div>
 
 <button onclick="pagar()">Finalizar compra</button>
 
 <script>
+let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
 
-let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-
-function render(){
 let html="";
 let total=0;
 
 carrinho.forEach((p,i)=>{
-html+=`
-<div class="card">
+html+=`<div class="card">
 ${p.nome} - R$ ${p.preco}
 <button onclick="remover(${i})">Remover</button>
-</div>
-`;
+</div>`;
 total+=p.preco;
 });
 
 document.getElementById("lista").innerHTML=html;
 document.getElementById("total").innerText="Total: R$ "+total;
-}
 
 function remover(i){
 carrinho.splice(i,1);
 localStorage.setItem("carrinho", JSON.stringify(carrinho));
-render();
-}
-
-function voltar(){
-window.location.href="/";
+location.reload();
 }
 
 function pagar(){
 window.location.href="https://dentpeg.com/checkout/vape-store";
 }
-
-render();
-
 </script>
 
 </body>
