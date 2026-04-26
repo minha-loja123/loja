@@ -2,23 +2,43 @@
 <html>
 <head>
 <title>Checkout</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width">
 
 <style>
-body{font-family:Arial;background:#f5f5f5;padding:10px}
-.card{background:#fff;padding:10px;margin-bottom:10px;border-radius:10px}
-.total{font-weight:bold;color:red}
-button{width:100%;padding:12px;background:#ff3c00;color:#fff;border:none}
+body{background:#0f0f14;color:#fff;font-family:Arial;padding:10px}
+
+.card{
+background:#1a1a22;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:5px;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.remover{background:red;color:#fff}
+.pagar{background:#00a650;color:#fff}
+.voltar{background:#444;color:#fff}
 </style>
 </head>
 
 <body>
 
-<h2>Seu Carrinho</h2>
-<div id="lista"></div>
-<div class="total" id="total"></div>
+<h2>🛒 Seu Carrinho</h2>
 
-<button onclick="pagar()">Finalizar compra</button>
+<div id="lista"></div>
+<h3 id="total"></h3>
+
+<button class="pagar" onclick="pagar()">Finalizar compra</button>
+<button class="voltar" onclick="location.href='index.html'">Continuar comprando</button>
 
 <script>
 let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
@@ -27,9 +47,10 @@ let html="";
 let total=0;
 
 carrinho.forEach((p,i)=>{
-html+=`<div class="card">
+html+=`
+<div class="card">
 ${p.nome} - R$ ${p.preco}
-<button onclick="remover(${i})">Remover</button>
+<button class="remover" onclick="remover(${i})">Remover</button>
 </div>`;
 total+=p.preco;
 });

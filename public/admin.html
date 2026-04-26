@@ -1,51 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin</title>
+<title>Painel Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{font-family:Arial;background:#f2f2f2;padding:20px}
+body{
+font-family:Arial;
+background:#0f0f14;
+color:#fff;
+padding:20px;
+margin:0;
+}
+
+/* TÍTULO */
+h2{
+text-align:center;
+}
+
+/* FORM */
+.form{
+background:#1a1a22;
+padding:15px;
+border-radius:10px;
+margin-bottom:20px;
+}
 
 input{
-padding:8px;
-margin:5px;
-}
-
-button{
-padding:8px;
-background:#ee4d2d;
-color:#fff;
+width:100%;
+padding:10px;
+margin:5px 0;
 border:none;
-cursor:pointer;
+border-radius:6px;
+background:#2a2a35;
+color:#fff;
 }
 
+/* BOTÕES */
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.criar{
+background:#00a650;
+color:#fff;
+width:100%;
+}
+
+.refresh{
+background:#444;
+color:#fff;
+width:100%;
+margin-top:5px;
+}
+
+/* LISTA */
 .item{
-background:#fff;
+background:#1a1a22;
 padding:10px;
 margin:10px 0;
+border-radius:10px;
 display:flex;
-justify-content:space-between;
 align-items:center;
-border-radius:8px;
+justify-content:space-between;
 }
 
+.item img{
+width:60px;
+height:60px;
+object-fit:contain;
+margin-right:10px;
+}
+
+.info{
+flex:1;
+}
+
+.nome{
+font-weight:bold;
+}
+
+.preco{
+color:#ff3c00;
+}
+
+/* BOTÃO EXCLUIR */
 .excluir{
 background:red;
+color:#fff;
+padding:8px;
+}
+
+/* STATUS */
+.status{
+text-align:center;
+margin-bottom:10px;
+color:#00ff88;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Admin - Produtos</h2>
+<h2>🔥 Painel Admin</h2>
 
-<input id="nome" placeholder="Nome">
+<div class="form">
+<input id="nome" placeholder="Nome do produto">
 <input id="preco" placeholder="Preço">
 <input id="img" placeholder="Imagem (ex: /img/pod.jpg)">
 
-<button onclick="criar()">Criar Produto</button>
+<button class="criar" onclick="criar()">➕ Criar Produto</button>
+<button class="refresh" onclick="carregar()">🔄 Atualizar Lista</button>
+</div>
 
-<hr>
+<div class="status" id="status"></div>
 
 <div id="lista"></div>
 
@@ -65,17 +137,18 @@ produtos.forEach(p=>{
 const item=document.createElement("div");
 item.className="item";
 
-const info=document.createElement("span");
-info.innerText = p.nome + " - R$ " + p.preco;
+item.innerHTML = `
+<img src="${p.img}">
 
-const btn=document.createElement("button");
-btn.innerText="Excluir";
-btn.className="excluir";
+<div class="info">
+<div class="nome">${p.nome}</div>
+<div class="preco">R$ ${p.preco}</div>
+</div>
 
-btn.onclick = () => deletar(p._id);
-
-item.appendChild(info);
-item.appendChild(btn);
+<button class="excluir" onclick="deletar('${p._id}')">
+Excluir
+</button>
+`;
 
 div.appendChild(item);
 
@@ -86,37 +159,48 @@ div.appendChild(item);
 
 /* CRIAR */
 function criar(){
+
+const nome = document.getElementById("nome").value;
+const preco = document.getElementById("preco").value;
+const img = document.getElementById("img").value;
+
+if(!nome || !preco || !img){
+return alert("Preencha tudo");
+}
+
 fetch("/produtos",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-nome:document.getElementById("nome").value,
-preco:Number(document.getElementById("preco").value),
-img:document.getElementById("img").value
+nome,
+preco:Number(preco),
+img
 })
 })
-.then(()=>carregar());
+.then(()=>{
+document.getElementById("status").innerText="✅ Produto criado!";
+document.getElementById("nome").value="";
+document.getElementById("preco").value="";
+document.getElementById("img").value="";
+carregar();
+});
 }
 
 /* DELETAR */
 function deletar(id){
 
-if(!confirm("Excluir produto?")) return;
+if(!confirm("Tem certeza que deseja excluir?")) return;
 
 fetch("/produtos/"+id,{
 method:"DELETE"
 })
-.then(res=>res.json())
-.then(data=>{
-console.log(data);
-alert(data.mensagem || "Erro");
+.then(()=>{
+document.getElementById("status").innerText="🗑️ Produto removido!";
 carregar();
 })
-.catch(err=>{
-console.error(err);
+.catch(()=>{
 alert("Erro ao deletar");
 });
-
 }
 
 /* INIT */
