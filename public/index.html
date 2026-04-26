@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#f5f5f5;
-}
+body{margin:0;font-family:Arial;background:#f5f5f5}
 
 /* HEADER */
 header{
@@ -34,13 +30,40 @@ border-radius:20px;
 cursor:pointer;
 }
 
-/* BANNER */
-.banner{
-background:linear-gradient(90deg,#ff3c00,#ff7b00);
+/* HERO */
+.hero{
+background:linear-gradient(120deg,#ff3c00,#ff7b00);
 color:#fff;
+padding:40px 20px;
 text-align:center;
-padding:20px;
+}
+
+.hero h1{margin:0;font-size:22px}
+.hero p{font-size:13px;margin:10px 0}
+
+.hero button{
+background:#fff;
+color:#ff3c00;
+border:none;
+padding:10px 20px;
+border-radius:20px;
 font-weight:bold;
+}
+
+/* CATEGORIAS */
+.categorias{
+display:flex;
+justify-content:space-around;
+padding:15px;
+background:#fff;
+}
+
+.categorias div{
+background:#f5f5f5;
+padding:10px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
 }
 
 /* BUSCA */
@@ -53,19 +76,8 @@ border-radius:8px;
 border:1px solid #ccc;
 }
 
-/* SEÇÕES */
-.secao{
-padding:10px;
-}
-
-.titulo-secao{
-font-size:16px;
-font-weight:bold;
-margin:10px;
-}
-
 /* GRID */
-.grid{
+#lista{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:12px;
@@ -80,10 +92,7 @@ padding:10px;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
 transition:0.2s;
 }
-
-.produto:hover{
-transform:scale(1.02);
-}
+.produto:hover{transform:scale(1.02)}
 
 .produto img{
 width:100%;
@@ -106,8 +115,8 @@ width:100%;
 margin-top:5px;
 }
 
-/* CONFIANÇA */
-.conf{
+/* INFO */
+.info{
 background:#fff;
 margin:10px;
 padding:15px;
@@ -138,39 +147,30 @@ Vape Store SP
 <span class="carrinho-topo" onclick="irCarrinho()">🛒 <span id="count">0</span></span>
 </header>
 
-<div class="banner">
-🔥 Promoções do dia | Entrega rápida 🚚
+<div class="hero">
+<h1>🔥 Os Melhores Pods</h1>
+<p>Qualidade premium • Entrega rápida • Promoções</p>
+<button onclick="scrollProdutos()">Ver produtos</button>
+</div>
+
+<div class="categorias">
+<div onclick="filtrarCategoria('pods')">💨 Pods</div>
+<div onclick="filtrarCategoria('essencias')">🧪 Essências</div>
+<div onclick="filtrarCategoria('acessorios')">⚙️ Acessórios</div>
 </div>
 
 <input id="busca" placeholder="Buscar produtos..." onkeyup="filtrar()">
 
-<!-- PODS -->
-<div class="secao">
-<div class="titulo-secao">🔥 Pods</div>
-<div class="grid" id="pods"></div>
-</div>
+<div id="lista"></div>
 
-<!-- ESSENCIAS -->
-<div class="secao">
-<div class="titulo-secao">💨 Essências</div>
-<div class="grid" id="essencias"></div>
-</div>
-
-<!-- ACESSORIOS -->
-<div class="secao">
-<div class="titulo-secao">⚙️ Acessórios</div>
-<div class="grid" id="acessorios"></div>
-</div>
-
-<!-- CONFIANÇA -->
-<div class="conf">
+<div class="info">
 <b>Compra Segura</b><br>
-Ambiente protegido e atendimento rápido.<br><br>
+Ambiente protegido e suporte disponível.<br><br>
 
-<b>Entrega</b><br>
-Envio rápido com discrição.<br><br>
+<b>Entrega Rápida</b><br>
+Envio ágil com discrição.<br><br>
 
-<b>Qualidade</b><br>
+<b>Qualidade Garantida</b><br>
 Produtos selecionados e bem avaliados.
 </div>
 
@@ -194,45 +194,55 @@ function criarProduto(p){
 
 const vendidos = Math.floor(Math.random()*200)+20;
 
-return `
-<div class="produto">
+const item = document.createElement("div");
+item.className="produto";
+
+item.innerHTML = `
 <img src="${p.img}">
 <div class="nome">${p.nome}</div>
 <div class="vendidos">🔥 ${vendidos} vendidos</div>
 <div class="preco">R$ ${p.preco}</div>
 <button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar</button>
-</div>
 `;
+
+document.getElementById("lista").appendChild(item);
 }
 
 function mostrar(lista){
-
-let podsHTML="";
-let essHTML="";
-let accHTML="";
-
-lista.forEach(p=>{
-const nome = p.nome.toLowerCase();
-
-if(nome.includes("k") || nome.includes("elf") || nome.includes("ignite")){
-podsHTML += criarProduto(p);
-}
-else if(nome.includes("essencia")){
-essHTML += criarProduto(p);
-}
-else{
-accHTML += criarProduto(p);
-}
-});
-
-document.getElementById("pods").innerHTML = podsHTML;
-document.getElementById("essencias").innerHTML = essHTML;
-document.getElementById("acessorios").innerHTML = accHTML;
+document.getElementById("lista").innerHTML="";
+lista.forEach(p=>criarProduto(p));
 }
 
 function filtrar(){
 const termo = document.getElementById("busca").value.toLowerCase();
 mostrar(produtosGlobal.filter(p=>p.nome.toLowerCase().includes(termo)));
+}
+
+function filtrarCategoria(tipo){
+
+let filtrados = [];
+
+if(tipo==="pods"){
+filtrados = produtosGlobal.filter(p =>
+p.nome.toLowerCase().includes("k") ||
+p.nome.toLowerCase().includes("elf") ||
+p.nome.toLowerCase().includes("ignite")
+);
+}
+
+if(tipo==="essencias"){
+filtrados = produtosGlobal.filter(p =>
+p.nome.toLowerCase().includes("essencia")
+);
+}
+
+if(tipo==="acessorios"){
+filtrados = produtosGlobal.filter(p =>
+p.nome.toLowerCase().includes("coil")
+);
+}
+
+mostrar(filtrados);
 }
 
 function addCarrinho(p){
@@ -248,6 +258,10 @@ document.getElementById("count").innerText = carrinho.length;
 
 function irCarrinho(){
 window.location.href="/checkout.html";
+}
+
+function scrollProdutos(){
+window.scrollTo({ top: 300, behavior: "smooth" });
 }
 
 function mostrarPopup(nome){
