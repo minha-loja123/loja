@@ -8,29 +8,47 @@
 body{
 margin:0;
 font-family:Arial;
-background:#0f0f14;
-color:#fff;
+background:#f5f5f5;
 }
 
 /* HEADER */
 header{
-background:#1a1a22;
+background:#fff;
 padding:15px;
 text-align:center;
 font-weight:bold;
 position:sticky;
 top:0;
 z-index:10;
+border-bottom:1px solid #ddd;
 }
 
 .carrinho-topo{
 position:absolute;
 right:15px;
 top:15px;
-background:#ff3c00;
+background:#00a650;
+color:#fff;
 padding:5px 10px;
 border-radius:20px;
 font-size:12px;
+cursor:pointer;
+}
+
+/* BANNER */
+.banner{
+background:linear-gradient(90deg,#ff3c00,#ff7b00);
+padding:20px;
+text-align:center;
+color:#fff;
+font-size:18px;
+font-weight:bold;
+}
+
+.banner span{
+font-size:13px;
+display:block;
+margin-top:5px;
 }
 
 /* BUSCA */
@@ -39,75 +57,71 @@ width:90%;
 margin:10px auto;
 display:block;
 padding:12px;
-border-radius:20px;
-border:none;
-background:#1e1e28;
-color:#fff;
+border-radius:8px;
+border:1px solid #ccc;
 }
 
 /* GRID */
 #lista{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:10px;
+gap:15px;
 padding:10px;
 }
 
+/* PRODUTO */
 .produto{
-background:#1a1a22;
+background:#fff;
 border-radius:12px;
 padding:10px;
-transition:0.2s;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
-.produto:hover{transform:scale(1.02)}
 
 .produto img{
 width:100%;
-height:120px;
+height:140px;
 object-fit:contain;
 }
 
-.nome{font-size:13px;font-weight:bold}
-.preco{color:#ff3c00;font-weight:bold}
-.vendidos{font-size:11px;color:#aaa}
-.estrelas{color:gold;font-size:12px}
+/* TEXTO */
+.nome{font-size:14px;font-weight:bold;color:#333}
+.vendidos{font-size:12px;color:#777}
+.preco{color:#e60023;font-weight:bold;font-size:16px;margin-top:5px}
 
 /* BOTÃO */
 .botao{
-background:linear-gradient(90deg,#ff3c00,#ff7b00);
-border:none;
+background:#00a650;
 color:#fff;
-padding:8px;
-border-radius:20px;
+border:none;
+padding:10px;
+border-radius:6px;
 width:100%;
-margin-top:5px;
+font-weight:bold;
+margin-top:8px;
+cursor:pointer;
+}
+
+/* PROMO */
+.promo{
+position:absolute;
+background:red;
+color:#fff;
+padding:3px 6px;
+font-size:11px;
+border-radius:5px;
+top:8px;
+left:8px;
 }
 
 /* INFO LOJA */
 .info-loja{
-background:#1a1a22;
+background:#fff;
 margin:10px;
 padding:15px;
-border-radius:12px;
+border-radius:10px;
 font-size:13px;
+color:#555;
 line-height:1.5;
-color:#ccc;
-}
-
-.titulo{
-font-weight:bold;
-margin-bottom:5px;
-color:#fff;
-}
-
-/* RODAPÉ */
-footer{
-margin-top:20px;
-padding:15px;
-text-align:center;
-font-size:12px;
-color:#888;
-border-top:1px solid #2a2a35;
 }
 
 /* POPUP */
@@ -115,11 +129,12 @@ border-top:1px solid #2a2a35;
 position:fixed;
 bottom:20px;
 left:20px;
-background:#1a1a22;
+background:#fff;
 padding:10px;
 border-radius:10px;
 display:none;
 font-size:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 </style>
 </head>
@@ -127,42 +142,35 @@ font-size:12px;
 <body>
 
 <header>
-🔥 Vape Store SP
+Vape Store SP
 <span class="carrinho-topo" onclick="irCarrinho()">
 🛒 <span id="count">0</span>
 </span>
 </header>
 
-<input id="busca" placeholder="Buscar produtos..." onkeyup="filtrar()">
-
-<!-- PRODUTOS -->
-<div id="lista"></div>
-
-<!-- INFORMAÇÕES DA LOJA -->
-<div class="info-loja">
-<div class="titulo">🛍️ Sobre a Loja</div>
-Somos uma loja online especializada em dispositivos e acessórios vape, focada em oferecer produtos de qualidade com entrega rápida e atendimento eficiente.
-
-<br><br>
-
-<div class="titulo">🚚 Entrega</div>
-Pedidos são enviados rapidamente após a confirmação. Entregas em São Paulo com agilidade e discrição.
-
-<br><br>
-
-<div class="titulo">🔒 Compra Segura</div>
-Ambiente protegido e suporte disponível para garantir uma experiência tranquila do início ao fim.
-
-<br><br>
-
-<div class="titulo">⭐ Atendimento</div>
-Equipe pronta para ajudar em dúvidas, recomendações e acompanhamento do pedido.
+<div class="banner">
+🔥 PROMOÇÕES DO DIA
+<span>Entrega rápida 🚚 | Compra segura 🔒</span>
 </div>
 
-<footer>
-© 2026 Vape Store SP <br>
-Todos os direitos reservados
-</footer>
+<input id="busca" placeholder="Buscar produtos..." onkeyup="filtrar()">
+
+<div id="lista"></div>
+
+<div class="info-loja">
+<b>Sobre a loja</b><br>
+Trabalhamos com produtos selecionados, oferecendo qualidade, envio rápido e atendimento eficiente.
+
+<br><br>
+
+<b>Entrega</b><br>
+Envios rápidos com discrição e agilidade.
+
+<br><br>
+
+<b>Compra segura</b><br>
+Ambiente protegido para sua tranquilidade.
+</div>
 
 <div id="popup"></div>
 
@@ -188,12 +196,20 @@ const item = document.createElement("div");
 item.className="produto";
 
 item.innerHTML = `
+<div style="position:relative">
+<div class="promo">OFERTA</div>
 <img src="${p.img}">
+</div>
+
 <div class="nome">${p.nome}</div>
-<div class="estrelas">★★★★★</div>
-<div class="vendidos">${vendidos} vendidos</div>
+
+<div class="vendidos">🔥 ${vendidos} vendidos</div>
+
 <div class="preco">R$ ${p.preco}</div>
-<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar</button>
+
+<button class="botao" onclick='addCarrinho(${JSON.stringify(p)})'>
+Comprar agora
+</button>
 `;
 
 document.getElementById("lista").appendChild(item);
