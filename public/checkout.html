@@ -2,31 +2,76 @@
 <html>
 <head>
 <title>Checkout</title>
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{background:#0f0f14;color:#fff;font-family:Arial;padding:10px}
-
-.card{
-background:#1a1a22;
+body{
+background:#0f0f14;
+color:#fff;
+font-family:Arial;
 padding:10px;
-margin:10px 0;
-border-radius:10px;
+margin:0;
 }
 
+/* CARD PRODUTO */
+.card{
+background:#1a1a22;
+padding:12px;
+margin:10px 0;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+/* BOTÕES */
 button{
 width:100%;
-padding:10px;
-margin-top:5px;
+padding:12px;
+margin-top:8px;
 border:none;
-border-radius:6px;
+border-radius:8px;
 font-weight:bold;
 cursor:pointer;
 }
 
-.remover{background:red;color:#fff}
-.pagar{background:#00a650;color:#fff}
-.voltar{background:#444;color:#fff}
+.remover{
+background:#ff3c00;
+color:#fff;
+}
+
+.pagar{
+background:#00a650;
+color:#fff;
+font-size:16px;
+}
+
+.voltar{
+background:#444;
+color:#fff;
+}
+
+/* TOTAL */
+.total{
+font-size:18px;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* BLOCO CONFIANÇA */
+.trust{
+background:#1a1a22;
+padding:12px;
+border-radius:10px;
+margin:15px 0;
+font-size:13px;
+line-height:1.6;
+}
+
+/* HEADER */
+h2{
+margin-top:0;
+}
 </style>
 </head>
 
@@ -35,49 +80,73 @@ cursor:pointer;
 <h2>🛒 Seu Carrinho</h2>
 
 <div id="lista"></div>
-<h3 id="total"></h3>
 
-<div style="background:#1a1a22;padding:10px;border-radius:10px;margin:10px 0">
-🔥 Garantia de entrega<br>
-🚚 Envio rápido<br>
-🔒 Pagamento seguro
+<div class="total" id="total"></div>
+
+<!-- BLOCO DE CONFIANÇA -->
+<div class="trust">
+🔒 Pagamento 100% seguro<br>
+🚚 Envio rápido e discreto<br>
+🔥 Produto original garantido
 </div>
 
 <button class="pagar" onclick="pagar()">
-🔥 FINALIZAR COMPRA AGORA
+🔥 FINALIZAR COMPRA SEGURA
 </button>
 
-<button class="voltar" onclick="location.href='index.html'">
-Continuar comprando
+<button class="voltar" onclick="voltar()">
+← Continuar comprando
 </button>
 
 <script>
-let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
 
-let html="";
-let total=0;
+/* CARRINHO */
+let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
-carrinho.forEach((p,i)=>{
-html+=`
+let listaHTML = "";
+let total = 0;
+
+/* LISTAR PRODUTOS */
+carrinho.forEach((p, i) => {
+
+listaHTML += `
 <div class="card">
-${p.nome} - R$ ${p.preco}
-<button class="remover" onclick="remover(${i})">Remover</button>
-</div>`;
-total+=p.preco;
+<div>
+<div>${p.nome}</div>
+<div>R$ ${p.preco}</div>
+</div>
+
+<button class="remover" onclick="remover(${i})">
+Remover
+</button>
+</div>
+`;
+
+total += Number(p.preco);
+
 });
 
-document.getElementById("lista").innerHTML=html;
-document.getElementById("total").innerText="Total: R$ "+total;
+/* MOSTRAR */
+document.getElementById("lista").innerHTML = listaHTML;
+document.getElementById("total").innerText = "Total: R$ " + total;
 
+/* REMOVER */
 function remover(i){
 carrinho.splice(i,1);
 localStorage.setItem("carrinho", JSON.stringify(carrinho));
 location.reload();
 }
 
+/* PAGAR */
 function pagar(){
-window.location.href="https://dentpeg.com/checkout/vape-store";
+window.location.href = "https://dentpeg.com/checkout/vape-store";
 }
+
+/* VOLTAR */
+function voltar(){
+window.location.href = "index.html";
+}
+
 </script>
 
 </body>
