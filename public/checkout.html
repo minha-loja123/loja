@@ -37,8 +37,19 @@ cursor:pointer;
 <div id="lista"></div>
 <h3 id="total"></h3>
 
-<button class="pagar" onclick="pagar()">Finalizar compra</button>
-<button class="voltar" onclick="location.href='index.html'">Continuar comprando</button>
+<div style="background:#1a1a22;padding:10px;border-radius:10px;margin:10px 0">
+🔥 Garantia de entrega<br>
+🚚 Envio rápido<br>
+🔒 Pagamento seguro
+</div>
+
+<button class="pagar" onclick="pagar()">
+🔥 FINALIZAR COMPRA AGORA
+</button>
+
+<button class="voltar" onclick="location.href='index.html'">
+Continuar comprando
+</button>
 
 <script>
 let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
