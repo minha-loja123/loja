@@ -13,7 +13,7 @@ padding:10px;
 margin:0;
 }
 
-/* CARD PRODUTO */
+/* PRODUTO */
 .card{
 background:#1a1a22;
 padding:12px;
@@ -40,10 +40,18 @@ background:#ff3c00;
 color:#fff;
 }
 
+/* BOTÃO PREMIUM */
 .pagar{
-background:#00a650;
+background:linear-gradient(120deg,#00c853,#00a650);
 color:#fff;
-font-size:16px;
+font-size:18px;
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.03)}
+100%{transform:scale(1)}
 }
 
 .voltar{
@@ -58,7 +66,7 @@ font-weight:bold;
 margin-top:10px;
 }
 
-/* BLOCO CONFIANÇA */
+/* CONFIANÇA */
 .trust{
 background:#1a1a22;
 padding:12px;
@@ -68,9 +76,14 @@ font-size:13px;
 line-height:1.6;
 }
 
-/* HEADER */
-h2{
-margin-top:0;
+/* URGÊNCIA */
+.urgencia{
+background:#ff3c00;
+padding:10px;
+border-radius:10px;
+text-align:center;
+font-size:14px;
+margin-bottom:10px;
 }
 </style>
 </head>
@@ -83,15 +96,21 @@ margin-top:0;
 
 <div class="total" id="total"></div>
 
-<!-- BLOCO DE CONFIANÇA -->
+<!-- URGÊNCIA -->
+<div class="urgencia">
+⚠️ Oferta expira em <span id="tempo">05:00</span>
+</div>
+
+<!-- CONFIANÇA -->
 <div class="trust">
 🔒 Pagamento 100% seguro<br>
 🚚 Envio rápido e discreto<br>
 🔥 Produto original garantido
 </div>
 
+<!-- BOTÃO FORTE -->
 <button class="pagar" onclick="pagar()">
-🔥 FINALIZAR COMPRA SEGURA
+🔥 FINALIZAR COMPRA AGORA
 </button>
 
 <button class="voltar" onclick="voltar()">
@@ -106,7 +125,7 @@ let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 let listaHTML = "";
 let total = 0;
 
-/* LISTAR PRODUTOS */
+/* LISTAR */
 carrinho.forEach((p, i) => {
 
 listaHTML += `
@@ -146,6 +165,24 @@ window.location.href = "https://dentpeg.com/checkout/vape-store";
 function voltar(){
 window.location.href = "index.html";
 }
+
+/* CONTADOR */
+let tempo = 300; // 5 minutos
+
+setInterval(()=>{
+tempo--;
+
+let min = Math.floor(tempo/60);
+let seg = tempo%60;
+
+document.getElementById("tempo").innerText =
+(min<10?"0":"")+min + ":" + (seg<10?"0":"")+seg;
+
+if(tempo <= 0){
+tempo = 300;
+}
+
+},1000);
 
 </script>
 
