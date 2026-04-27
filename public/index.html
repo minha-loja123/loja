@@ -19,6 +19,7 @@ padding:15px;
 text-align:center;
 position:sticky;
 top:0;
+z-index:10;
 }
 
 .carrinho{
@@ -38,16 +39,34 @@ padding:30px;
 text-align:center;
 }
 
-/* CONFIANÇA */
-.trust{
+/* BUSCA */
+#busca{
+width:90%;
+margin:10px auto;
+display:block;
+padding:12px;
+border-radius:25px;
+border:none;
+}
+
+/* CATEGORIAS */
+.menu{
 display:flex;
-justify-content:space-around;
-font-size:12px;
-background:#1a1a22;
+gap:10px;
+overflow:auto;
 padding:10px;
 }
 
-/* LISTA (1 COLUNA) */
+.menu button{
+border:none;
+padding:8px 14px;
+border-radius:20px;
+background:#333;
+color:#fff;
+cursor:pointer;
+}
+
+/* PRODUTOS */
 #lista{
 display:flex;
 flex-direction:column;
@@ -55,38 +74,21 @@ padding:10px;
 gap:15px;
 }
 
-/* CARD PRODUTO */
 .produto{
 background:#1a1a22;
 border-radius:12px;
 padding:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* IMAGEM GRANDE */
 .produto img{
 width:100%;
 height:180px;
 object-fit:contain;
-margin-bottom:10px;
 }
 
-/* TEXTO */
-.nome{
-font-size:16px;
-font-weight:bold;
-}
-
-.preco{
-font-size:18px;
-color:#00ff9d;
-margin:5px 0;
-}
-
-.vendidos{
-font-size:12px;
-color:#aaa;
-}
+.nome{font-size:16px;font-weight:bold;}
+.preco{color:#00ff9d;font-size:18px;margin:5px 0;}
+.vendidos{font-size:12px;color:#aaa;}
 
 /* BOTÕES */
 .btn{
@@ -99,27 +101,9 @@ font-weight:bold;
 cursor:pointer;
 }
 
-.ver{
-background:#333;
-color:#fff;
-}
+.ver{background:#333;color:#fff;}
+.comprar{background:#00a650;color:#fff;}
 
-.comprar{
-background:linear-gradient(120deg,#00c853,#00a650);
-color:#fff;
-}
-
-/* POPUP */
-.popup{
-position:fixed;
-bottom:20px;
-left:20px;
-background:#1a1a22;
-padding:10px;
-border-radius:10px;
-display:none;
-font-size:12px;
-}
 </style>
 </head>
 
@@ -131,19 +115,20 @@ font-size:12px;
 </header>
 
 <div class="hero">
-<h2>🔥 Promoções do dia</h2>
-<p>Entrega rápida • Qualidade premium</p>
+<h2>🔥 Ofertas do dia</h2>
+<p>Entrega rápida • Produtos premium</p>
 </div>
 
-<div class="trust">
-<span>🚚 Rápido</span>
-<span>🔒 Seguro</span>
-<span>⭐ 4.9</span>
+<input id="busca" placeholder="Buscar produtos..." onkeyup="buscar()">
+
+<div class="menu">
+<button onclick="filtrar('todos')">Todos</button>
+<button onclick="filtrar('pods')">Pods</button>
+<button onclick="filtrar('essencias')">Essências</button>
+<button onclick="filtrar('acessorios')">Acessórios</button>
 </div>
 
 <div id="lista"></div>
-
-<div class="popup" id="popup"></div>
 
 <script>
 
@@ -157,6 +142,7 @@ produtos=d;
 mostrar(d);
 });
 
+/* MOSTRAR */
 function mostrar(lista){
 document.getElementById("lista").innerHTML="";
 
@@ -167,30 +153,49 @@ const vendidos = Math.floor(Math.random()*200)+50;
 document.getElementById("lista").innerHTML+=`
 <div class="produto">
 <img src="${p.img}">
-
 <div class="nome">${p.nome}</div>
 <div class="vendidos">🔥 ${vendidos} vendidos hoje</div>
 <div class="preco">R$ ${p.preco}</div>
 
-<button class="btn ver" onclick='verProduto(${JSON.stringify(p)})'>
-Ver detalhes
-</button>
-
-<button class="btn comprar" onclick='addCarrinho(${JSON.stringify(p)})'>
-🔥 Comprar agora
-</button>
-
+<button class="btn ver" onclick='verProduto(${JSON.stringify(p)})'>Ver detalhes</button>
+<button class="btn comprar" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar agora</button>
 </div>
 `;
-
 });
 }
 
+/* BUSCA */
+function buscar(){
+const termo = document.getElementById("busca").value.toLowerCase();
+const filtrado = produtos.filter(p=>p.nome.toLowerCase().includes(termo));
+mostrar(filtrado);
+}
+
+/* FILTRO */
+function filtrar(tipo){
+
+if(tipo==="todos") return mostrar(produtos);
+
+if(tipo==="pods"){
+return mostrar(produtos.filter(p=>p.nome.toLowerCase().includes("k")||p.nome.toLowerCase().includes("elf")));
+}
+
+if(tipo==="essencias"){
+return mostrar(produtos.filter(p=>p.nome.toLowerCase().includes("essencia")));
+}
+
+if(tipo==="acessorios"){
+return mostrar(produtos.filter(p=>p.nome.toLowerCase().includes("coil")));
+}
+
+}
+
+/* CARRINHO */
 function addCarrinho(p){
 carrinho.push(p);
 localStorage.setItem("carrinho", JSON.stringify(carrinho));
 document.getElementById("count").innerText = carrinho.length;
-mostrarPopup("Adicionado ao carrinho 🔥");
+alert("Adicionado ao carrinho");
 }
 
 function verProduto(p){
@@ -201,22 +206,6 @@ location.href="produto.html";
 function irCarrinho(){
 location.href="checkout.html";
 }
-
-/* POPUP */
-function mostrarPopup(msg){
-const popup=document.getElementById("popup");
-popup.innerText=msg;
-popup.style.display="block";
-setTimeout(()=>popup.style.display="none",3000);
-}
-
-/* SOCIAL */
-setInterval(()=>{
-const nomes=["Lucas","Ana","Pedro","Julia"];
-const prods=["Elfbar","Ignite","Oxbar"];
-
-mostrarPopup(nomes[Math.floor(Math.random()*nomes.length)]+" comprou "+prods[Math.floor(Math.random()*prods.length)]);
-},20000);
 
 </script>
 
