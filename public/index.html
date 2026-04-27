@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f14;color:#fff}
+body{
+margin:0;
+font-family:Arial;
+background:#0f0f14;
+color:#fff;
+}
 
 /* HEADER */
 header{
@@ -21,7 +26,7 @@ position:absolute;
 right:15px;
 top:15px;
 background:#00a650;
-padding:6px 10px;
+padding:6px 12px;
 border-radius:20px;
 cursor:pointer;
 }
@@ -29,7 +34,7 @@ cursor:pointer;
 /* HERO */
 .hero{
 background:linear-gradient(120deg,#ff3c00,#ff7b00);
-padding:40px;
+padding:30px;
 text-align:center;
 }
 
@@ -37,48 +42,74 @@ text-align:center;
 .trust{
 display:flex;
 justify-content:space-around;
+font-size:12px;
 background:#1a1a22;
 padding:10px;
-font-size:12px;
 }
 
-/* GRID */
+/* LISTA (1 COLUNA) */
 #lista{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
+display:flex;
+flex-direction:column;
 padding:10px;
+gap:15px;
 }
 
+/* CARD PRODUTO */
 .produto{
 background:#1a1a22;
-padding:10px;
-border-radius:10px;
-transition:0.2s;
+border-radius:12px;
+padding:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.3);
 }
-.produto:hover{transform:scale(1.03)}
 
+/* IMAGEM GRANDE */
 .produto img{
 width:100%;
-height:120px;
+height:180px;
 object-fit:contain;
+margin-bottom:10px;
+}
+
+/* TEXTO */
+.nome{
+font-size:16px;
+font-weight:bold;
+}
+
+.preco{
+font-size:18px;
+color:#00ff9d;
+margin:5px 0;
+}
+
+.vendidos{
+font-size:12px;
+color:#aaa;
 }
 
 /* BOTÕES */
 .btn{
-padding:8px;
-border:none;
-border-radius:6px;
 width:100%;
-margin-top:5px;
-cursor:pointer;
+padding:12px;
+margin-top:6px;
+border:none;
+border-radius:8px;
 font-weight:bold;
+cursor:pointer;
 }
 
-.ver{background:#444;color:#fff;}
-.comprar{background:#00a650;color:#fff;}
+.ver{
+background:#333;
+color:#fff;
+}
 
-/* POPUP BONITO */
+.comprar{
+background:linear-gradient(120deg,#00c853,#00a650);
+color:#fff;
+}
+
+/* POPUP */
 .popup{
 position:fixed;
 bottom:20px;
@@ -86,15 +117,8 @@ left:20px;
 background:#1a1a22;
 padding:10px;
 border-radius:10px;
-font-size:12px;
 display:none;
-box-shadow:0 0 10px rgba(0,0,0,0.5);
-animation:fade 0.3s;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translateY(10px)}
-to{opacity:1;transform:translateY(0)}
+font-size:12px;
 }
 </style>
 </head>
@@ -108,13 +132,13 @@ to{opacity:1;transform:translateY(0)}
 
 <div class="hero">
 <h2>🔥 Promoções do dia</h2>
-<p>Entrega rápida • Produtos premium</p>
+<p>Entrega rápida • Qualidade premium</p>
 </div>
 
 <div class="trust">
-<span>🚚 Envio rápido</span>
+<span>🚚 Rápido</span>
 <span>🔒 Seguro</span>
-<span>⭐ 4.9 Avaliação</span>
+<span>⭐ 4.9</span>
 </div>
 
 <div id="lista"></div>
@@ -135,16 +159,30 @@ mostrar(d);
 
 function mostrar(lista){
 document.getElementById("lista").innerHTML="";
+
 lista.forEach(p=>{
+
+const vendidos = Math.floor(Math.random()*200)+50;
+
 document.getElementById("lista").innerHTML+=`
 <div class="produto">
 <img src="${p.img}">
-<b>${p.nome}</b>
-<div>R$ ${p.preco}</div>
 
-<button class="btn ver" onclick='verProduto(${JSON.stringify(p)})'>Ver</button>
-<button class="btn comprar" onclick='addCarrinho(${JSON.stringify(p)})'>Comprar</button>
-</div>`;
+<div class="nome">${p.nome}</div>
+<div class="vendidos">🔥 ${vendidos} vendidos hoje</div>
+<div class="preco">R$ ${p.preco}</div>
+
+<button class="btn ver" onclick='verProduto(${JSON.stringify(p)})'>
+Ver detalhes
+</button>
+
+<button class="btn comprar" onclick='addCarrinho(${JSON.stringify(p)})'>
+🔥 Comprar agora
+</button>
+
+</div>
+`;
+
 });
 }
 
@@ -164,18 +202,15 @@ function irCarrinho(){
 location.href="checkout.html";
 }
 
-/* POPUP BONITO */
+/* POPUP */
 function mostrarPopup(msg){
 const popup=document.getElementById("popup");
 popup.innerText=msg;
 popup.style.display="block";
-
-setTimeout(()=>{
-popup.style.display="none";
-},3000);
+setTimeout(()=>popup.style.display="none",3000);
 }
 
-/* POPUP SOCIAL (FAKE SUAVE) */
+/* SOCIAL */
 setInterval(()=>{
 const nomes=["Lucas","Ana","Pedro","Julia"];
 const prods=["Elfbar","Ignite","Oxbar"];
