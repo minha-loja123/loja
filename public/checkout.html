@@ -13,7 +13,7 @@ padding:10px;
 margin:0;
 }
 
-/* PRODUTO */
+/* CARD */
 .card{
 background:#1a1a22;
 padding:12px;
@@ -40,7 +40,6 @@ background:#ff3c00;
 color:#fff;
 }
 
-/* BOTÃO PREMIUM */
 .pagar{
 background:linear-gradient(120deg,#00c853,#00a650);
 color:#fff;
@@ -96,19 +95,16 @@ margin-bottom:10px;
 
 <div class="total" id="total"></div>
 
-<!-- URGÊNCIA -->
 <div class="urgencia">
 ⚠️ Oferta expira em <span id="tempo">05:00</span>
 </div>
 
-<!-- CONFIANÇA -->
 <div class="trust">
 🔒 Pagamento 100% seguro<br>
 🚚 Envio rápido e discreto<br>
 🔥 Produto original garantido
 </div>
 
-<!-- BOTÃO FORTE -->
 <button class="pagar" onclick="pagar()">
 🔥 FINALIZAR COMPRA AGORA
 </button>
@@ -156,18 +152,40 @@ localStorage.setItem("carrinho", JSON.stringify(carrinho));
 location.reload();
 }
 
-/* PAGAR */
+/* 🔥 FUNÇÃO PAGAR (SALVA PEDIDO + REDIRECIONA) */
 function pagar(){
-window.location.href = "https://dentpeg.com/checkout/vape-store";
+
+let carrinho = JSON.parse(localStorage.getItem("carrinho"))||[];
+
+let total = carrinho.reduce((soma,p)=> soma + Number(p.preco),0);
+
+/* SALVAR PEDIDO */
+fetch("/pedido",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+produtos:carrinho,
+total:total
+})
+})
+.then(()=>{
+
+localStorage.removeItem("carrinho");
+
+/* REDIRECIONA PAGAMENTO */
+window.location.href="https://dentpeg.com/checkout/vape-store";
+
+});
+
 }
 
 /* VOLTAR */
 function voltar(){
-window.location.href = "index.html";
+window.location.href="index.html";
 }
 
 /* CONTADOR */
-let tempo = 300; // 5 minutos
+let tempo = 300;
 
 setInterval(()=>{
 tempo--;

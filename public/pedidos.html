@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pedidos</title>
+<meta name="viewport" content="width=device-width">
+<style>
+body{background:#0f0f14;color:#fff;font-family:Arial;padding:10px}
+
+.card{
+background:#1a1a22;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+}
+
+button{
+margin-top:5px;
+padding:8px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.novo{background:orange}
+.pago{background:green;color:#fff}
+.enviado{background:blue;color:#fff}
+</style>
+</head>
+
+<body>
+
+<h2>📦 Pedidos</h2>
+<div id="lista"></div>
+
+<script>
+
+function carregar(){
+fetch("/pedidos")
+.then(r=>r.json())
+.then(d=>{
+
+let html="";
+
+d.forEach(p=>{
+
+html+=`
+<div class="card">
+<b>Total: R$ ${p.total}</b><br>
+Status: ${p.status}<br>
+
+<button class="novo" onclick="mudar('${p._id}','novo')">Novo</button>
+<button class="pago" onclick="mudar('${p._id}','pago')">Pago</button>
+<button class="enviado" onclick="mudar('${p._id}','enviado')">Enviado</button>
+</div>
+`;
+
+});
+
+document.getElementById("lista").innerHTML=html;
+
+});
+}
+
+function mudar(id,status){
+fetch("/pedido/"+id,{
+method:"PUT",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({status})
+}).then(()=>carregar());
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>
